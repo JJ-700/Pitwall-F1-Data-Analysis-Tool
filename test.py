@@ -22,9 +22,6 @@ def get_graph():
     data = request.get_json()
     selected_drivers = data.get('drivers', [])
 
-    if len(selected_drivers) < 2:
-        return jsonify({"error": "Please select at least 2 drivers"}), 400
-
     try:
         session = fastf1.get_session(2025, 'japan', 'R')
         session.load()
