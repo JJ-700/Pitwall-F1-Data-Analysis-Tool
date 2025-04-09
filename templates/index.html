@@ -15,15 +15,19 @@
     
     <div class="container">
         <div class="driver-selector">
-            <h2>Select Drivers (2-20)</h2>
-            <div class="driver-info">
-                {% for driver in drivers %}
-                    <!-- Button now gets its team colour via data-color -->
-                    <button class="driver-btn" data-driver="{{ driver }}" data-color="{{ driver_colors[driver] }}">{{ driver }}</button>
-                {% endfor %}
-            </div>
-        
+            <h2>Select Race</h2>
+            
             <!-- Dropdowns for country and year -->
+            <div class="dropdown-container">
+                <label for="year">Select Year</label>
+                <select id="year" name="year">
+                    <option value="2025">2025</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                    <!-- Add other years as needed -->
+                </select>
+            </div>
+
             <div class="dropdown-container">
                 <label for="country">Select Race Country</label>
                 <select id="country" name="country">
@@ -34,14 +38,12 @@
                 </select>
             </div>
             
-            <div class="dropdown-container">
-                <label for="year">Select Year</label>
-                <select id="year" name="year">
-                    <option value="2025">2025</option>
-                    <option value="2024">2024</option>
-                    <option value="2023">2023</option>
-                    <!-- Add other years as needed -->
-                </select>
+            <button id="load-drivers-btn">Load Available Drivers</button>
+            <div id="driver-loading" style="display: none; color: white;">Loading drivers...</div>
+            
+            <h2>Select Drivers (2-20)</h2>
+            <div class="driver-info" id="driver-buttons-container">
+                <!-- Driver buttons will be loaded here dynamically -->
             </div>
         
             <button id="generate-btn">Generate Interactive Graph</button>
@@ -53,7 +55,6 @@
             </div>
         </div>
         
-        
         <div class="graph-container">
             <div id="plot"></div>
         </div>
@@ -63,17 +64,63 @@
     <script>
         const selectedDrivers = new Set();
         
-        // Driver selection: toggle active class and update background colour based on team's color
-        document.querySelectorAll('.driver-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                btn.classList.toggle('active');
-                if (btn.classList.contains('active')) {
-                    btn.style.backgroundColor = btn.dataset.color;
-                    selectedDrivers.add(btn.dataset.driver);
+        // Function to create driver buttons
+        function createDriverButtons(drivers, driverColors) {
+            const container = document.getElementById('driver-buttons-container');
+            container.innerHTML = ''; // Clear existing buttons
+            
+            drivers.forEach(driver => {
+                const btn = document.createElement('button');
+                btn.className = 'driver-btn';
+                btn.dataset.driver = driver;
+                btn.dataset.color = driverColors[driver] || '#333';
+                btn.textContent = driver;
+                btn.style.backgroundColor = '#333';
+                
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('active');
+                    if (btn.classList.contains('active')) {
+                        btn.style.backgroundColor = btn.dataset.color;
+                        selectedDrivers.add(btn.dataset.driver);
+                    } else {
+                        btn.style.backgroundColor = '#333';
+                        selectedDrivers.delete(btn.dataset.driver);
+                    }
+                });
+                
+                container.appendChild(btn);
+            });
+        }
+
+        // Load available drivers for selected session
+        document.getElementById('load-drivers-btn').addEventListener('click', () => {
+            const selectedCountry = document.getElementById('country').value;
+            const selectedYear = document.getElementById('year').value;
+            
+            document.getElementById('driver-loading').style.display = 'block';
+            document.getElementById('driver-buttons-container').innerHTML = '';
+            selectedDrivers.clear();
+            
+            fetch('/get_drivers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    country: selectedCountry,
+                    year: selectedYear
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('driver-loading').style.display = 'none';
+                if (data.error) {
+                    showError(data.error);
                 } else {
-                    btn.style.backgroundColor = '#333';
-                    selectedDrivers.delete(btn.dataset.driver);
+                    createDriverButtons(data.drivers, data.driver_colors);
                 }
+            })
+            .catch(error => {
+                document.getElementById('driver-loading').style.display = 'none';
+                showError('Failed to load drivers: ' + error.message);
             });
         });
 

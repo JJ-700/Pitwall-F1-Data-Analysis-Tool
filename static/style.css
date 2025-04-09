@@ -35,7 +35,7 @@ body {
 }
 .driver-btn {
     background-color: #333;
-    color: white;
+    color: rgba(255, 255, 255, 0.433);
     border: none;
     padding: 8px 12px;
     margin: 5px;
@@ -49,9 +49,14 @@ body {
 }
 .driver-btn.active {
     background-color: var(--f1-red);
+    color: black;
     font-weight: bold;
 }
-#generate-btn {
+
+/* Unified button styling for all major buttons */
+#generate-btn, 
+#load-drivers-btn, 
+.control-btn {
     background-color: var(--f1-red);
     color: white;
     border: none;
@@ -64,11 +69,15 @@ body {
     width: 100%;
     transition: all 0.3s;
 }
-#generate-btn:hover {
+
+#generate-btn:hover, 
+#load-drivers-btn:hover, 
+.control-btn:hover {
     background-color: #c00500;
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
+
 #plot {
     width: 100%;
     height: 600px;
@@ -88,25 +97,6 @@ body {
     flex-wrap: wrap;
     gap: 10px;
     margin-bottom: 20px;
-}
-#generate-btn, .control-btn {
-    background-color: var(--f1-red);
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    margin-top: 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    width: 100%;
-    transition: all 0.3s;
-}
-
-#generate-btn:hover, .control-btn:hover {
-    background-color: #c00500;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
 /* Dropdown Styling */
@@ -148,15 +138,15 @@ select:focus {
     font-weight: bold;
 }
 
-/* Ensure the dropdowns stay within the original sidebar width */
-.driver-selector {
-    flex: 1;
-    min-width: 300px;
-    background-color: #1e1e1e;
-    padding: 20px;
-    border-radius: 8px;
-    /* Maintain original width and spacing for the sidebar */
+/* Loading indicator */
+#driver-loading {
+    color: white;
+    text-align: center;
+    padding: 10px;
+    margin-top: 10px;
+    font-style: italic;
 }
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .container {
