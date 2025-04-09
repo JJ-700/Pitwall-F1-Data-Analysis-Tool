@@ -13,9 +13,34 @@ drivers = ['VER', 'TSU', 'LEC', 'HAM', 'ANT', 'RUS', 'NOR', 'PIA',
            'HUL', 'BOR', 'GAS', 'DOO', 'SAI', 'ALB', 'LAW', 'HAD',
            'STR', 'ALO', 'OCO', 'BEA']
 
+# New: Mapping of drivers to their team colours
+driver_colors = {
+    'VER': '#3671c6',   # 
+    'TSU': '#285393',   # 
+    'LEC': '#e8002d',   # 
+    'HAM': '#b40023',   # 
+    'ANT': '#27f4d2',   # 
+    'RUS': '#1ec1a6',   # 
+    'NOR': '#ff8000',   # 
+    'PIA': '#cc6600',   # 
+    'HUL': '#52e252',   # 
+    'BOR': '#3faf3f',   # 
+    'GAS': '#e66cbb',   # 
+    'DOO': '#b35491',   # 
+    'SAI': '#1868db',   # 
+    'ALB': '#1868db',   # 
+    'LAW': '#6692ff',   # 
+    'HAD': '#5174cc',   # 
+    'STR': '#16654b',   #
+    'ALO': '#229971',   # 
+    'OCO': '#84878a',   # 
+    'BEA': '#b6babd'    # 
+}
+
 @app.route("/")
 def index():
-    return render_template("index.html", drivers=drivers)
+    # Pass driver_colors to template so that each driver button can include its team colour
+    return render_template("index.html", drivers=drivers, driver_colors=driver_colors)
 
 @app.route("/get_graph", methods=["POST"])
 def get_graph():
@@ -41,19 +66,23 @@ def get_graph():
             if len(valid_laps) == 0:
                 print(f"No valid laps for {driver}")  # Debug
                 continue
-                
+
             lap_numbers = valid_laps['LapNumber'].tolist()
             lap_times_sec = valid_laps['LapTime'].dt.total_seconds().tolist()
             
             print(f"{driver} data points: {len(lap_numbers)}")  # Debug
-
+            
+            # Use the team colour for the driver in both marker and line
+            color = driver_colors.get(driver, '#ffffff')
+            
             fig.add_trace(go.Scatter(
                 x=lap_numbers,
                 y=lap_times_sec,
                 mode='lines+markers',
                 name=driver,
-                marker=dict(size=6),
-                line=dict(width=2)
+                hovertemplate='Lap %{x}<br>Time: %{y:.3f}s',
+                marker=dict(size=6, color=color),
+                line=dict(width=2, color=color)
             ))
             has_data = True
 
@@ -71,6 +100,7 @@ def get_graph():
         xaxis_title="Lap Number",
         yaxis_title="Lap Time (seconds)",
         template="plotly_dark",
+        hovermode="closest",
         showlegend=True
     )
 
