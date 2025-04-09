@@ -22,15 +22,37 @@
                     <button class="driver-btn" data-driver="{{ driver }}" data-color="{{ driver_colors[driver] }}">{{ driver }}</button>
                 {% endfor %}
             </div>
+        
+            <!-- Dropdowns for country and year -->
+            <div class="dropdown-container">
+                <label for="country">Select Race Country</label>
+                <select id="country" name="country">
+                    <option value="japan">Japan</option>
+                    <option value="australia">Australia</option>
+                    <option value="monaco">Monaco</option>
+                    <!-- Add other race countries as needed -->
+                </select>
+            </div>
             
+            <div class="dropdown-container">
+                <label for="year">Select Year</label>
+                <select id="year" name="year">
+                    <option value="2025">2025</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                    <!-- Add other years as needed -->
+                </select>
+            </div>
+        
             <button id="generate-btn">Generate Interactive Graph</button>
             <div id="error" class="error"></div>
-            
+        
             <!-- Graph controls: now only the Export button is retained and styled similarly -->
             <div id="graph-controls" style="margin-top: 20px; display: none;">
                 <button id="export-btn" class="control-btn">Export as PNG</button>
             </div>
         </div>
+        
         
         <div class="graph-container">
             <div id="plot"></div>
@@ -61,14 +83,21 @@
                 showError('Please select at least 2 drivers');
                 return;
             }
-            
+
+            // Get the selected country and year
+            const selectedCountry = document.getElementById('country').value;
+            const selectedYear = document.getElementById('year').value;
             clearError();
             document.getElementById('plot').innerHTML = '<div style="color:white; text-align:center; padding-top:50px;">Loading interactive graph...</div>';
             
             fetch('/get_graph', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ drivers: Array.from(selectedDrivers) })
+                body: JSON.stringify({
+                     drivers: Array.from(selectedDrivers),
+                        country: selectedCountry,
+                        year: selectedYear
+                    })
             })
             .then(response => {
                 if (!response.ok) {

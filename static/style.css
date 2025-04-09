@@ -108,6 +108,56 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
+
+/* Dropdown Styling */
+select {
+    background-color: #333;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    margin: 10px 0;
+    border-radius: 4px;
+    font-size: 16px;
+    width: 100%;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+select:hover {
+    background-color: #444;
+}
+
+select:focus {
+    outline: none;
+    background-color: #444;
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.6);
+}
+
+/* Dropdown Container - adjust the layout but keep it compact */
+.dropdown-container {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Label for Dropdown */
+.dropdown-container label {
+    font-size: 16px;
+    color: var(--f1-light);
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+/* Ensure the dropdowns stay within the original sidebar width */
+.driver-selector {
+    flex: 1;
+    min-width: 300px;
+    background-color: #1e1e1e;
+    padding: 20px;
+    border-radius: 8px;
+    /* Maintain original width and spacing for the sidebar */
+}
+/* Responsive Design */
 @media (max-width: 768px) {
     .container {
         flex-direction: column;

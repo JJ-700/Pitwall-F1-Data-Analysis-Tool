@@ -46,9 +46,11 @@ def index():
 def get_graph():
     data = request.get_json()
     selected_drivers = data.get('drivers', [])
+    selected_country = data.get('country', 'australia')
+    selected_year = data.get('year', 2025)
 
     try:
-        session = fastf1.get_session(2025, 'japan', 'R')
+        session = fastf1.get_session(int(selected_year), selected_country, 'R')
         session.load()
         print(f"Session loaded with {len(session.laps)} laps")  # Debug
     except Exception as e:
