@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>F1 Interactive Lap Time Comparison</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.0.2"></script>
+    <style>
+        :root {
+            --f1-red: #e10600;
+            --f1-dark: #121212;
+            --f1-light: #ffffff;
+        }
+        body {
+            font-family: 'Titillium Web', Arial, sans-serif;
+            background-color: var(--f1-dark);
+            color: var(--f1-light);
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--f1-red);
+            padding-bottom: 10px;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .driver-selector {
+            flex: 1;
+            min-width: 300px;
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .graph-container {
+            flex: 3;
+            min-width: 600px;
+        }
+        .driver-btn {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .driver-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .driver-btn.active {
+            background-color: var(--f1-red);
+            font-weight: bold;
+        }
+        #generate-btn {
+            background-color: var(--f1-red);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin-top: 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        #generate-btn:hover {
+            background-color: #c00500;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        #plot {
+            width: 100%;
+            height: 600px;
+            background-color: #1e1e1e;
+            border-radius: 8px;
+        }
+        .error {
+            color: #ff6b6b;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #2a1a1a;
+            border-radius: 4px;
+            display: none;
+        }
+        .driver-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>F1 Interactive Lap Time Analysis</h1>
+        <p>Compare driver performances across laps with interactive visualization</p>
+    </div>
+    
+    <div class="container">
+        <div class="driver-selector">
+            <h2>Select Drivers (2-20)</h2>
+            <div class="driver-info">
+                {% for driver in drivers %}
+                    <button class="driver-btn" data-driver="{{ driver }}">{{ driver }}</button>
+                {% endfor %}
+            </div>
+            
+            <button id="generate-btn">Generate Interactive Graph</button>
+            <div id="error" class="error"></div>
+            
+            <div id="graph-controls" style="margin-top: 20px; display: none;">
+                <h3>Graph Controls</h3>
+                <button id="zoom-btn">Reset Zoom</button>
+                <button id="export-btn">Export as PNG</button>
+            </div>
+        </div>
+        
+        <div class="graph-container">
+            <div id="plot"></div>
+        </div>
+    </div>
+
+    <script>
+        const selectedDrivers = new Set();
+        
+        // Driver selection
+        document.querySelectorAll('.driver-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const driver = btn.dataset.driver;
+                btn.classList.toggle('active');
+                if (selectedDrivers.has(driver)) {
+                    selectedDrivers.delete(driver);
+                } else {
+                    selectedDrivers.add(driver);
+                }
+            });
+        });
+    
+    // Generate graph
+    document.getElementById('generate-btn').addEventListener('click', () => {
+        if (selectedDrivers.size < 2) {
+            showError('Please select at least 2 drivers');
+            return;
+        }
+        
+        document.getElementById('error').style.display = 'none';
+        document.getElementById('plot').innerHTML = '<div style="color:white; text-align:center; padding-top:50px;">Loading interactive graph...</div>';
+        
+        fetch('/get_graph', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                drivers: Array.from(selectedDrivers)
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw new Error(err.error) });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            // Properly handle the Plotly data structure
+            Plotly.newPlot('plot', {
+                data: data.data,
+                layout: data.layout
+            }).then(() => {
+                document.getElementById('graph-controls').style.display = 'block';
+            });
+        })
+        .catch(error => {
+            showError(error.message);
+            console.error('Error:', error);
+        });
+    });
+    </script>    
+</body>
+</html>
