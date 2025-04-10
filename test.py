@@ -13,32 +13,14 @@ fastf1.plotting.setup_mpl(mpl_timedelta_support=True, color_scheme='fastf1', mis
 def index():
     return render_template("index.html")
 
-def get_driver_team_color(year, driver_code):
-    try:
-        # Get the team color for a driver in a specific year
-        event = fastf1.get_event(year, 1)  # Get first event of the year
-        session = fastf1.get_session(year, event['EventName'], 'R')
-        session.load(telemetry=False, weather=False, messages=False)
-        
-        driver_info = session.get_driver(driver_code)
-        team_name = driver_info['TeamName']
-        
-        # Get team color from FastF1
-        team_color = fastf1.plotting.team_color(team_name)
-        return team_color
-    
-    except Exception as e:
-        print(f"Error getting team color for {driver_code} in {year}: {str(e)}")
-        return '#ffffff'  # Default white if error occurs
-
 @app.route("/get_drivers", methods=["POST"])
 def get_drivers():
     data = request.get_json()
-    selected_country = data.get('country', 'australia')
+    selected_race = data.get('race', 'japan')
     selected_year = data.get('year', 2025)
 
     try:
-        session = fastf1.get_session(int(selected_year), selected_country, 'R')
+        session = fastf1.get_session(int(selected_year), selected_race, 'R')
         session.load(telemetry=False, weather=False, messages=False)
         
         # Get unique drivers from the session
@@ -50,7 +32,10 @@ def get_drivers():
             try:
                 driver_info = session.get_driver(driver)
                 team_name = driver_info['TeamName']
-                team_color = fastf1.plotting.team_color(team_name)
+                if team_name == "Racing Bulls":
+                    team_color = '#1634cb'
+                else:
+                    team_color = fastf1.plotting.team_color(team_name)
                 session_driver_colors[driver] = team_color
             except Exception as e:
                 print(f"Error getting color for {driver}: {str(e)}")
@@ -63,16 +48,43 @@ def get_drivers():
         
     except Exception as e:
         return jsonify({"error": f"Failed to load session data: {str(e)}"}), 500
+    
+@app.route("/get_races", methods=["POST"])
+def get_races():
+    data = request.get_json()
+    selected_year = data.get('year', 2025)
+    
+    try:
+        schedule = fastf1.get_event_schedule(int(selected_year))
+        # Get only races that happened (ignore cancelled/postponed)
+        races = schedule[
+            (schedule['EventDate'] < pd.Timestamp.now()) &
+            (~schedule['EventName'].str.contains('Testing', case=False, na=False)) #only include past races
+        ]
+
+
+        
+        race_options = []
+        for _, event in races.iterrows():
+            race_options.append({
+                'value': event['EventName'].lower().replace(' ', ''),
+                'name': event['EventName']
+            })
+        
+        return jsonify({'races': race_options})
+        
+    except Exception as e:
+        return jsonify({"error": f"Failed to load races: {str(e)}"}), 500
 
 @app.route("/get_graph", methods=["POST"])
 def get_graph():
     data = request.get_json()
     selected_drivers = data.get('drivers', [])
-    selected_country = data.get('country', 'australia')
+    selected_race = data.get('race', 'australia')
     selected_year = data.get('year', 2025)
 
     try:
-        session = fastf1.get_session(int(selected_year), selected_country, 'R')
+        session = fastf1.get_session(int(selected_year), selected_race, 'R')
         session.load()
         print(f"Session loaded with {len(session.laps)} laps")  # Debug
     except Exception as e:
@@ -98,6 +110,8 @@ def get_graph():
             try:
                 driver_info = session.get_driver(driver)
                 team_name = driver_info['TeamName']
+                if team_name == "Racing Bulls":             # Special case for RB as it outputs oddly
+                    team_name = "RB"
                 color = fastf1.plotting.team_color(team_name)
             except Exception as e:
                 print(f"Error getting team color for {driver}: {str(e)}")

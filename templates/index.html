@@ -9,8 +9,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>F1 Interactive Lap Time Analysis</h1>
-        <p>Compare driver performances across laps with interactive visualization</p>
+        <h1>F1 Interactive Lap Time Analysis</h1>   
     </div>
     
     <div class="container">
@@ -22,19 +21,13 @@
                 <label for="year">Select Year</label>
                 <select id="year" name="year">
                     <option value="2025">2025</option>
-                    <option value="2024">2024</option>
-                    <option value="2023">2023</option>
                     <!-- Add other years as needed -->
                 </select>
             </div>
-
             <div class="dropdown-container">
-                <label for="country">Select Race Country</label>
-                <select id="country" name="country">
-                    <option value="japan">Japan</option>
-                    <option value="australia">Australia</option>
-                    <option value="monaco">Monaco</option>
-                    <!-- Add other race countries as needed -->
+                <label for="race">Select Race</label>
+                <select id="race" name="race">
+                    <!-- Options will be loaded dynamically -->
                 </select>
             </div>
             
@@ -94,7 +87,7 @@
 
         // Load available drivers for selected session
         document.getElementById('load-drivers-btn').addEventListener('click', () => {
-            const selectedCountry = document.getElementById('country').value;
+            const selectedRace = document.getElementById('race').value;
             const selectedYear = document.getElementById('year').value;
             
             document.getElementById('driver-loading').style.display = 'block';
@@ -105,7 +98,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    country: selectedCountry,
+                    race: selectedRace,
                     year: selectedYear
                 })
             })
@@ -126,13 +119,9 @@
 
         // Generate graph and clear any loading text once done
         document.getElementById('generate-btn').addEventListener('click', () => {
-            if (selectedDrivers.size < 2) {
-                showError('Please select at least 2 drivers');
-                return;
-            }
 
             // Get the selected country and year
-            const selectedCountry = document.getElementById('country').value;
+            const selectedRace = document.getElementById('race').value;
             const selectedYear = document.getElementById('year').value;
             clearError();
             document.getElementById('plot').innerHTML = '<div style="color:white; text-align:center; padding-top:50px;">Loading interactive graph...</div>';
@@ -142,7 +131,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                      drivers: Array.from(selectedDrivers),
-                        country: selectedCountry,
+                        race: selectedRace,
                         year: selectedYear
                     })
             })
@@ -204,6 +193,61 @@
             errorDiv.textContent = "";
             errorDiv.style.display = 'none';
         }
+            // Add this to your existing JavaScript
+    const yearDropdown = document.getElementById('year');
+    const raceDropdown = document.getElementById('race');
+    
+    // Function to load races for selected year
+    function loadRacesForYear(year) {
+        raceDropdown.innerHTML = '<option value="">Loading races...</option>';
+        
+        fetch('/get_races', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ year: year })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                raceDropdown.innerHTML = '<option value="">Error loading races</option>';
+                showError(data.error);
+                return;
+            }
+            
+            raceDropdown.innerHTML = '';
+            data.races.forEach(race => {
+                const option = document.createElement('option');
+                option.value = race.value;
+                option.textContent = race.name;
+                raceDropdown.appendChild(option);
+            });
+            
+            // After loading races, also load drivers for the first race
+            if (data.races.length > 0) {
+                document.getElementById('load-drivers-btn').click();
+            }
+        })
+        .catch(error => {
+            raceDropdown.innerHTML = '<option value="">Error loading races</option>';
+            showError('Failed to load races: ' + error.message);
+        });
+    }
+    
+    // Load races when year changes
+    yearDropdown.addEventListener('change', () => {
+        const selectedYear = yearDropdown.value;
+        loadRacesForYear(selectedYear);
+    });
+    
+    // Load races for initial year on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        loadRacesForYear(yearDropdown.value);
+    });
+    
+    // Update all references from 'country' to 'race' in your existing code
+    // For example, in your fetch calls, change:
+    // selectedCountry -> selectedRace
+    // data.country -> data.race
     </script>    
 </body>
 </html>
