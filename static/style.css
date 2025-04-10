@@ -1,155 +1,186 @@
-/* F1 Data Visualization CSS */
+/* F1 Data Visualization CSS - Restructured Layout */
 :root {
     --f1-red: #e10600;
     --f1-dark: #121212;
     --f1-light: #ffffff;
 }
+
 body {
     font-family: 'Titillium Web', Arial, sans-serif;
     background-color: var(--f1-dark);
     color: var(--f1-light);
     margin: 0;
     padding: 20px;
+    display: grid;
+    grid-template-areas: 
+        "header header"
+        "sidebar graph";
+    grid-template-rows: auto 1fr;
+    grid-template-columns: 300px 1fr;
+    gap: 20px;
+    height: 100vh;
 }
+
 .header {
-    text-align: center;
-    margin-bottom: 20px;
+    grid-area: header;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
     border-bottom: 2px solid var(--f1-red);
     padding-bottom: 10px;
 }
-.container {
+
+.header-content {
     display: flex;
-    flex-wrap: wrap;
+    align-items: center;
     gap: 20px;
+    flex-grow: 1;
 }
-.driver-selector {
-    flex: 1;
-    min-width: 300px;
-    background-color: #1e1e1e;
-    padding: 20px;
-    border-radius: 8px;
+
+.dropdowns-inline {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
 }
+
+.container {
+    grid-area: sidebar;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
 .graph-container {
-    flex: 3;
-    min-width: 600px;
+    grid-area: graph;
+    min-width: 0; /* Allows graph to shrink properly */
 }
+
+/* Driver Selection Sidebar */
+#driver-buttons-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 5px;
+}
+
 .driver-btn {
     background-color: #333;
-    color: rgba(255, 255, 255, 0.433);
+    color: rgba(255, 255, 255, 0.7);
     border: none;
-    padding: 8px 12px;
-    margin: 5px;
+    padding: 12px;
+    text-align: left;
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.3s;
 }
+
 .driver-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transform: translateX(5px);
+    background-color: #444;
 }
+
 .driver-btn.active {
     background-color: var(--f1-red);
     color: black;
     font-weight: bold;
 }
 
-/* Unified button styling for all major buttons */
-#generate-btn, 
-#load-drivers-btn, 
-.control-btn {
-    background-color: var(--f1-red);
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    margin-top: 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    width: 100%;
-    transition: all 0.3s;
-}
-
-#generate-btn:hover, 
-#load-drivers-btn:hover, 
-.control-btn:hover {
-    background-color: #c00500;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
+/* Graph Area */
 #plot {
     width: 100%;
-    height: 600px;
+    height: 100%;
     background-color: #1e1e1e;
     border-radius: 8px;
 }
-.error {
-    color: #ff6b6b;
-    margin-top: 10px;
-    padding: 10px;
-    background-color: #2a1a1a;
-    border-radius: 4px;
-    display: none;
-}
-.driver-info {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 20px;
-}
 
-/* Dropdown Styling */
+/* Form Elements */
 select {
     background-color: #333;
     color: white;
     border: none;
     padding: 8px 12px;
-    margin: 10px 0;
     border-radius: 4px;
-    font-size: 16px;
-    width: 100%;
-    transition: all 0.3s;
-    cursor: pointer;
+    min-width: 200px;
 }
 
-select:hover {
-    background-color: #444;
-}
-
-select:focus {
-    outline: none;
-    background-color: #444;
-    box-shadow: 0 0 5px rgba(255, 0, 0, 0.6);
-}
-
-/* Dropdown Container - adjust the layout but keep it compact */
-.dropdown-container {
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Label for Dropdown */
-.dropdown-container label {
-    font-size: 16px;
-    color: var(--f1-light);
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-/* Loading indicator */
-#driver-loading {
+#load-drivers-btn {
+    background-color: var(--f1-red);
     color: white;
-    text-align: center;
-    padding: 10px;
-    margin-top: 10px;
-    font-style: italic;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#load-drivers-btn:hover {
+    background-color: #c00500;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .container {
-        flex-direction: column;
+    body {
+        grid-template-areas: 
+            "header"
+            "sidebar"
+            "graph";
+        grid-template-rows: auto auto 1fr;
+        grid-template-columns: 1fr;
+        padding: 10px;
+        height: auto;
     }
+
+    .header-content {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+
+    .dropdowns-inline {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #load-drivers-btn {
+        width: 100%;
+    }
+}
+
+/* Existing styles below - adjusted for new layout */
+#generate-btn, #export-btn {
+    background-color: var(--f1-red);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+}
+
+#generate-btn:hover {
+    background-color: #c00500;
+}
+
+.error {
+    color: #ff6b6b;
+    padding: 10px;
+    background-color: #2a1a1a;
+    border-radius: 4px;
+    display: none;
+}
+
+.driver-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#graph-controls {
+    margin-top: auto;
 }
