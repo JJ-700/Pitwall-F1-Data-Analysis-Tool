@@ -10,25 +10,8 @@
 <body>
     <div class="header">
         <div class="header-content">
-            <h1>F1 Interactive Lap Time Analysis</h1>
-    
-            <div class="dropdowns-inline">
-                <div class="dropdown-container">
-                    <label for="year">Year</label>
-                    <select id="year" name="year">
-                        <option value="2025">2025</option>
-                        <option value="2024">2024</option>
-                    </select>
-                </div>
-    
-                <div class="dropdown-container">
-                    <label for="race">Race</label>
-                    <select id="race" name="race">
-                        <!-- Options will be loaded dynamically -->
-                    </select>
-                </div>
-                <button id="load-drivers-btn">Refresh Session</button>
-                <div id="driver-loading" style="display: none; color: white;">Loading drivers...</div>
+            <h1>F1 Interactive Metric Analysis</h1>
+            <button id="open-modal-btn" class="open-modal-btn">Session Settings</button>
             </div>
         </div>
     </div>    
@@ -52,7 +35,36 @@
             <div id="plot"></div>
         </div>
     </div>
-
+        <!-- Modal Overlay -->
+    <div id="settings-modal" class="modal-overlay">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h2>Session Settings</h2>
+            <button id="close-modal-btn" class="close-modal-btn">&times;</button>
+        </div>
+    
+        <div class="dropdowns-inline">
+            <div class="dropdown-container">
+            <label for="year">Year</label>
+            <select id="year" name="year">
+                <option value="2025">2025</option>
+                <option value="2024">2024</option>
+            </select>
+            </div>
+    
+            <div class="dropdown-container">
+            <label for="race">Race</label>
+            <select id="race" name="race">
+                <!-- Options will be loaded dynamically -->
+            </select>
+            </div>
+    
+            <button id="load-drivers-btn">Refresh Session</button>
+            <div id="driver-loading" style="display: none; color: white;">Loading drivers...</div>
+        </div>
+        </div>
+    </div>
+  
     <!-- JS below -->
     <script>
         const selectedDrivers = new Set();
@@ -243,11 +255,23 @@
     document.addEventListener('DOMContentLoaded', () => {
         loadRacesForYear(yearDropdown.value);
     });
-    
-    // Update all references from 'country' to 'race' in your existing code
-    // For example, in your fetch calls, change:
-    // selectedCountry -> selectedRace
-    // data.country -> data.race
+    // Open the modal when the "Session Settings" button is clicked
+    document.getElementById('open-modal-btn').addEventListener('click', () => {
+        const modal = document.getElementById('settings-modal');
+        modal.style.display = 'flex'; // Use 'flex' to ensure proper centering
+    });
+
+    // Close modal when clicking the close button
+    document.getElementById('close-modal-btn').addEventListener('click', () => {
+        document.getElementById('settings-modal').style.display = 'none';
+    });
+
+    // Close modal when clicking outside the modal content (on the overlay)
+    document.getElementById('settings-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('settings-modal')) {
+            document.getElementById('settings-modal').style.display = 'none';
+        }
+    });
     </script>    
 </body>
 </html>
