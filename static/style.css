@@ -9,251 +9,243 @@
     --f1-border: #3f3f46;
     --f1-card: #2a2a2e;
   }
-  
   body {
-    font-family: 'Inter', 'Titillium Web', sans-serif;
-    background-color: var(--f1-dark);
-    color: var(--f1-light);
+    font-family: 'Arial', sans-serif;
+    background-color: #121212;
+    color: #ffffff;
     margin: 0;
-    padding: 24px;
-    display: grid;
-    grid-template-areas: 
-      "header header"
-      "sidebar graph";
-    grid-template-rows: auto 1fr;
-    grid-template-columns: 300px 1fr;
-    gap: 24px;
-    height: 100vh;
-    box-sizing: border-box;
-  }
-  
-/* Header Layout */
+    padding: 0;
+}
+
 .header {
-    grid-area: header;
+    background-color: #1e1e1e;
+    padding: 15px 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.header-content {
+    max-width: 100%;
+    margin: 0 auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 20px;
-    border-bottom: 2px solid var(--f1-red);
-    padding-bottom: 12px;
+    padding: 0 20px;
+}
+.header-buttons {
+  display: flex;
+  gap: 10px;
 }
 
-/* Header Content Layout */
-.header-content {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-grow: 1;
-    justify-content: flex-start; /* Ensure header content is left-aligned */
+h1 {
+    margin: 0;
+    font-size: 24px;
 }
-  .dropdowns-inline {
+
+.container {
+    max-width: 100%;
+    margin: 20px auto;
+    padding: 0 20px;
+}
+
+.driver-info {
     display: flex;
-    align-items: center;
-    gap: 12px;
     flex-wrap: wrap;
-  }
-  
-  /* Sidebar */
-  .container {
-    grid-area: sidebar;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  
-  /* Graph Panel */
-  .graph-container {
-    grid-area: graph;
-    background-color: var(--f1-card);
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 0 0 1px var(--f1-border);
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  /* Driver Sidebar Buttons */
-  #driver-buttons-container {
-    display: flex;
-    flex-direction: column;
     gap: 10px;
-    overflow-y: auto;
-    flex: 1;
-    padding-right: 6px;
-  }
-  
-  .driver-btn {
-    background-color: var(--f1-panel);
-    color: var(--f1-muted);
-    border: 1px solid var(--f1-border);
-    padding: 12px 16px;
-    text-align: left;
-    border-radius: 6px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+.driver-btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
     cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 14px;
-  }
-  
-  .driver-btn:hover {
-    background-color: #333;
-    color: var(--f1-light);
-    transform: translateX(4px);
-  }
-  
-  .driver-btn.active {
-    background-color: var(--f1-red);
-    color: black;
-    font-weight: 600;
-  }
-  
-  /* Graph Area */
-  #plot {
-    width: 100%;
-    height: 100%;
-    background-color: #1e1e1e;
-    border-radius: 10px;
-  }
-  
-  /* Select Dropdowns */
-  select {
-    background-color: var(--f1-panel);
-    color: var(--f1-light);
-    border: 1px solid var(--f1-border);
-    padding: 10px 14px;
-    border-radius: 6px;
-    font-size: 14px;
-    min-width: 200px;
-  }
-  
-  /* Main Buttons */
-  #open-modal-btn,
-  #load-drivers-btn,
-  #generate-btn,
-  #export-btn {
-    background-color: var(--f1-red);
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.driver-btn.active {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+button {
+    background-color: #e10600;
     color: white;
     border: none;
-    padding: 12px 20px;
-    border-radius: 6px;
+    padding: 10px 20px;
+    border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.2s ease;
-    font-weight: 500;
-  }
-  
-  #load-drivers-btn:hover,
-  #generate-btn:hover,
-  #export-btn:hover {
-    background-color: #c00500;
-  }
-  
-  #generate-btn,
-  #export-btn {
-    width: 100%;
-  }
-  
-  /* Error Message */
-  .error {
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #b70500;
+}
+
+.control-btn {
+    background-color: #333;
+    margin-right: 10px;
+}
+
+.control-btn:hover {
+    background-color: #555;
+}
+
+.error {
     color: #ff6b6b;
-    background-color: #2a1a1a;
-    padding: 12px 16px;
-    border-radius: 6px;
-    font-size: 14px;
+    margin: 10px 0;
     display: none;
-  }
-  
-  /* Graph Controls Section */
-  #graph-controls {
-    margin-top: auto;
-  }
-  
-  /* Driver Info Layout */
-  .driver-info {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    font-size: 14px;
-  }
-  
-  /* Responsive Layout */
-  @media (max-width: 768px) {
-    body {
-      grid-template-areas: 
-        "header"
-        "sidebar"
-        "graph";
-      grid-template-rows: auto auto 1fr;
-      grid-template-columns: 1fr;
-      padding: 16px;
-      height: auto;
-    }
-  
-    .header-content {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        flex-grow: 1;
-        justify-content: flex-start; /* Ensure header content is left-aligned */
-    }
-  
-    .dropdowns-inline {
-      flex-direction: column;
-      align-items: stretch;
-    }
-  
-    #load-drivers-btn {
-      width: 100%;
-    }
-  }
-  .modal-overlay {
-    display: none; /* Hidden by default */
+}
+
+.graph-container {
+    background-color: #1e1e1e;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+    min-height: 500px;
+    flex: 1 1 500px;
+    height: 100%;
+}
+
+/* Modal styles */
+.modal-overlay {
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(18, 18, 18, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
     z-index: 1000;
-    transition: all 0.3s ease;
+    justify-content: center;
+    align-items: center;
 }
 
-/* Ensure modal content always appears in the center */
 .modal-content {
     background-color: #1e1e1e;
-    padding: 24px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
-    position: relative; /* Use relative positioning */
+    padding: 20px;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
 }
 
-/* Modal Header */
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
-.modal-header h2 {
-    margin: 0;
-    font-size: 1.5rem;
-    color: var(--f1-light);
-}
-
-/* Close Button */
 .close-modal-btn {
     background: none;
     border: none;
-    font-size: 1.5rem;
-    color: var(--f1-light);
+    font-size: 24px;
+    cursor: pointer;
+    color: white;
+}
+
+.dropdowns-inline {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.dropdown-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.dropdown-container label {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.dropdown-container select {
+    padding: 8px;
+    border-radius: 4px;
+    border: none;
+    background-color: #333;
+    color: white;
+}
+
+/* Graph types styling */
+.graph-types-container {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+.graph-types-container h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #fff;
+}
+
+.graph-type-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.graph-type-option {
+    display: flex;
+    align-items: center;
+    color: #fff;
     cursor: pointer;
 }
-#open-modal-btn {
-    margin-left: auto; /* Push button to the right */
+
+.graph-type-option input {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+/* Multiple graphs layout - 2x2 grid */
+.graphs-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 20px;
+  width: 100%;
+}
+
+.graph-item {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  padding-bottom: 40px;
+  border-radius: 8px;
+  height: 400px; /* Fixed height for consistent grid */
+  display: flex;
+  flex-direction: column;
+}
+
+.graph-item h3 {
+  margin: 0 0 10px 0;
+  color: white;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.graph-item .js-plotly-plot {
+  width: 100%;
+  height: 100%;
+  flex-grow: 1;
+}
+
+.graph-item .js-plotly-plot {
+    width: 100%;
+}
+
+.open-modal-btn {
+    background-color: #333;
+}
+
+.open-modal-btn:hover {
+    background-color: #555;
 }

@@ -59,11 +59,9 @@ def get_races():
         # Get only races that happened (ignore cancelled/postponed)
         races = schedule[
             (schedule['EventDate'] < pd.Timestamp.now()) &
-            (~schedule['EventName'].str.contains('Testing', case=False, na=False)) #only include past races
+            (~schedule['EventName'].str.contains('Testing', case=False, na=False))
         ]
 
-
-        
         race_options = []
         for _, event in races.iterrows():
             race_options.append({
@@ -82,15 +80,47 @@ def get_graph():
     selected_drivers = data.get('drivers', [])
     selected_race = data.get('race', 'australia')
     selected_year = data.get('year', 2025)
+    graph_types = data.get('graph_types', ['laptimes'])
 
     try:
         session = fastf1.get_session(int(selected_year), selected_race, 'R')
         session.load()
-        print(f"Session loaded with {len(session.laps)} laps")  # Debug
     except Exception as e:
-        print(f"Error loading session: {str(e)}")  # Debug
         return jsonify({"error": f"Failed to load session data: {str(e)}"}), 500
 
+    figures = {}
+    
+    if 'laptimes' in graph_types:
+        fig = create_lap_time_figure(session, selected_drivers)
+        if fig:
+            figures['laptimes'] = fig
+    
+    if 'position' in graph_types:
+        fig = create_position_figure(session, selected_drivers)
+        if fig:
+            figures['position'] = fig
+    
+    if 'tyre' in graph_types:
+        fig = create_tyre_figure(session, selected_drivers)
+        if fig:
+            figures['tyre'] = fig
+    
+    if 'quali' in graph_types:
+        fig = create_quali_figure(session, selected_drivers)
+        if fig:
+            figures['quali'] = fig
+
+    if not figures:
+        return jsonify({"error": "No valid data found for selected graph types"}), 400
+
+    return jsonify({
+        'figures': {k: {'data': [trace.to_plotly_json() for trace in v.data], 
+                    'layout': v.layout.to_plotly_json()} 
+                  for k, v in figures.items()},
+        'selected_graphs': list(figures.keys())
+    })
+
+def create_lap_time_figure(session, selected_drivers):
     fig = go.Figure()
     has_data = False
 
@@ -100,56 +130,194 @@ def get_graph():
             valid_laps = driver_laps[driver_laps['LapTime'].notnull()]
             
             if len(valid_laps) == 0:
-                print(f"No valid laps for {driver}")  # Debug
                 continue
 
             lap_numbers = valid_laps['LapNumber'].tolist()
             lap_times_sec = valid_laps['LapTime'].dt.total_seconds().tolist()
             
-            # Get the driver's team color for this session
             try:
                 driver_info = session.get_driver(driver)
                 team_name = driver_info['TeamName']
-                if team_name == "Racing Bulls":             # Special case for RB as it outputs oddly
+                if team_name == "Racing Bulls":
                     team_name = "RB"
                 color = fastf1.plotting.team_color(team_name)
-            except Exception as e:
-                print(f"Error getting team color for {driver}: {str(e)}")
-                color = '#ffffff'  # Default white
+            except Exception:
+                color = '#ffffff'
             
             fig.add_trace(go.Scatter(
                 x=lap_numbers,
                 y=lap_times_sec,
                 mode='lines+markers',
-                name=f"{driver} ({team_name})",  # Include team name in legend
+                name=f"{driver} ({team_name})",
                 hovertemplate='Lap %{x}<br>Time: %{y:.3f}s',
                 marker=dict(size=6, color=color),
                 line=dict(width=2, color=color)
             ))
             has_data = True
-
-        except Exception as e:
-            print(f"Error processing {driver}: {str(e)}")  # Debug
+        except Exception:
             continue
 
     if not has_data:
-        error_msg = "No valid lap data found for selected drivers"
-        print(error_msg)  # Debug
-        return jsonify({"error": error_msg}), 400
+        return None
 
     fig.update_layout(
-        title=f"Lap Times Throughout Race - {session.event['EventName']} {selected_year}",
+        title=f"Lap Times - {session.event['EventName']} {session.event.year}",
         xaxis_title="Lap Number",
         yaxis_title="Lap Time (seconds)",
         template="plotly_dark",
+        hovermode="closest"
+    )
+    return fig
+
+def create_position_figure(session, selected_drivers):
+    fig = go.Figure()
+    has_data = False
+
+    for driver in selected_drivers:
+        try:
+            driver_laps = session.laps.pick_drivers(driver)
+            positions = driver_laps['Position'].tolist()
+            lap_numbers = driver_laps['LapNumber'].tolist()
+            
+            try:
+                driver_info = session.get_driver(driver)
+                team_name = driver_info['TeamName']
+                if team_name == "Racing Bulls":
+                    team_name = "RB"
+                color = fastf1.plotting.team_color(team_name)
+            except Exception:
+                color = '#ffffff'
+            
+            fig.add_trace(go.Scatter(
+                x=lap_numbers,
+                y=positions,
+                mode='lines+markers',
+                name=f"{driver} ({team_name})",
+                hovertemplate='Lap %{x}<br>Position: %{y}',
+                marker=dict(size=6, color=color),
+                line=dict(width=2, color=color)
+            ))
+            has_data = True
+        except Exception:
+            continue
+
+    if not has_data:
+        return None
+
+    fig.update_layout(
+        title=f"Race Position - {session.event['EventName']} {session.event.year}",
+        xaxis_title="Lap Number",
+        yaxis_title="Position",
+        template="plotly_dark",
         hovermode="closest",
+        yaxis=dict(autorange="reversed")
+    )
+    return fig
+
+def create_tyre_figure(session, selected_drivers):
+    fig = go.Figure()
+    has_data = False
+
+    for driver in selected_drivers:
+        try:
+            driver_laps = session.laps.pick_drivers(driver)
+            stints = driver_laps[['LapNumber', 'Compound', 'Stint']]
+            
+            if len(stints) == 0:
+                continue
+
+            try:
+                driver_info = session.get_driver(driver)
+                team_name = driver_info['TeamName']
+                if team_name == "Racing Bulls":
+                    team_name = "RB"
+                color = fastf1.plotting.team_color(team_name)
+            except Exception:
+                color = '#ffffff'
+            
+            for stint_num, stint_data in stints.groupby('Stint'):
+                compound = stint_data['Compound'].iloc[0]
+                start_lap = stint_data['LapNumber'].min()
+                end_lap = stint_data['LapNumber'].max()
+                
+                fig.add_trace(go.Scatter(
+                    x=[start_lap, end_lap],
+                    y=[driver, driver],
+                    mode='lines',
+                    name=f"{driver} Stint {stint_num}",
+                    line=dict(width=10, color=color),
+                    hoverinfo='text',
+                    hovertext=f"Driver: {driver}<br>Stint: {stint_num}<br>Compound: {compound}<br>Laps: {start_lap}-{end_lap}",
+                    legendgroup=driver
+                ))
+            
+            has_data = True
+        except Exception:
+            continue
+
+    if not has_data:
+        return None
+
+    fig.update_layout(
+        title=f"Tyre Strategy - {session.event['EventName']} {session.event.year}",
+        xaxis_title="Lap Number",
+        yaxis_title="Driver",
+        template="plotly_dark",
         showlegend=True
     )
+    return fig
 
-    return jsonify({
-        'data': [trace.to_plotly_json() for trace in fig.data],
-        'layout': fig.layout.to_plotly_json()
-    })
+def create_quali_figure(session, selected_drivers):
+    try:
+        quali_session = fastf1.get_session(session.event.year, session.event['EventName'], 'Q')
+        quali_session.load()
+    except Exception:
+        return None
+
+    fig = go.Figure()
+    has_data = False
+
+    for driver in selected_drivers:
+        try:
+            driver_laps = quali_session.laps.pick_drivers(driver).pick_fastest()
+            if len(driver_laps) == 0:
+                continue
+
+            position = driver_laps['Position'].iloc[0]
+            time = driver_laps['LapTime'].total_seconds()
+            
+            try:
+                driver_info = quali_session.get_driver(driver)
+                team_name = driver_info['TeamName']
+                if team_name == "Racing Bulls":
+                    team_name = "RB"
+                color = fastf1.plotting.team_color(team_name)
+            except Exception:
+                color = '#ffffff'
+            
+            fig.add_trace(go.Bar(
+                x=[driver],
+                y=[time],
+                name=f"{driver} ({team_name})",
+                marker_color=color,
+                hoverinfo='text',
+                hovertext=f"Driver: {driver}<br>Position: {position}<br>Time: {driver_laps['LapTime'].dt.total_seconds().iloc[0]:.3f}s"
+            ))
+            has_data = True
+        except Exception:
+            continue
+
+    if not has_data:
+        return None
+
+    fig.update_layout(
+        title=f"Qualifying Results - {quali_session.event['EventName']} {quali_session.event.year}",
+        xaxis_title="Driver",
+        yaxis_title="Time (seconds)",
+        template="plotly_dark",
+        showlegend=False
+    )
+    return fig
 
 if __name__ == "__main__":
     app.run(debug=True)

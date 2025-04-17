@@ -4,100 +4,183 @@
     <meta charset="UTF-8">
     <title>F1 Interactive Lap Time Comparison</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.0.2"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css')}}">
 </head>
 <body>
     <div class="header">
         <div class="header-content">
             <h1>F1 Interactive Metric Analysis</h1>
-            <button id="open-modal-btn" class="open-modal-btn">Session Settings</button>
+            <div class="header-buttons">
+                <button id="open-modal-btn" class="open-modal-btn">Session Settings</button>
+                <button id="generate-btn">Generate Interactive Graph</button>
+                <div id="graph-controls" style="display: none;">
+                    <button id="export-btn" class="control-btn">Export as PNG</button>
+                </div>
             </div>
+            <div id="error" class="error"></div>
         </div>
     </div>    
     
     <div class="container">
-
-            <div class="driver-info" id="driver-buttons-container">
-                <!-- Driver buttons will be loaded here dynamically -->
-            </div>
-        
-            <button id="generate-btn">Generate Interactive Graph</button>
-            <div id="error" class="error"></div>
-        
-            <!-- Graph controls: now only the Export button is retained and styled similarly -->
-            <div id="graph-controls" style="margin-top: 20px; display: none;">
-                <button id="export-btn" class="control-btn">Export as PNG</button>
-            </div>
+        <div class="driver-info" id="driver-buttons-container">
+            <!-- Driver buttons will be loaded here dynamically -->
         </div>
         
         <div class="graph-container">
             <div id="plot"></div>
         </div>
     </div>
-        <!-- Modal Overlay -->
+
+    <!-- Modal Overlay -->
     <div id="settings-modal" class="modal-overlay">
         <div class="modal-content">
-        <div class="modal-header">
-            <h2>Session Settings</h2>
-            <button id="close-modal-btn" class="close-modal-btn">&times;</button>
-        </div>
-    
-        <div class="dropdowns-inline">
-            <div class="dropdown-container">
-            <label for="year">Year</label>
-            <select id="year" name="year">
-                <option value="2025">2025</option>
-                <option value="2024">2024</option>
-            </select>
+            <div class="modal-header">
+                <h2>Session Settings</h2>
+                <button id="close-modal-btn" class="close-modal-btn">&times;</button>
             </div>
-    
-            <div class="dropdown-container">
-            <label for="race">Race</label>
-            <select id="race" name="race">
-                <!-- Options will be loaded dynamically -->
-            </select>
+        
+            <div class="dropdowns-inline">
+                <div class="dropdown-container">
+                    <label for="year">Year</label>
+                    <select id="year" name="year">
+                        <option value="2025">2025</option>
+                        <option value="2024">2024</option>
+                    </select>
+                </div>
+        
+                <div class="dropdown-container">
+                    <label for="race">Race</label>
+                    <select id="race" name="race">
+                        <!-- Options will be loaded dynamically -->
+                    </select>
+                </div>
+        
+                <button id="load-drivers-btn">Refresh Session</button>
+                <div id="driver-loading" style="display: none; color: white;">Loading drivers...</div>
             </div>
-    
-            <button id="load-drivers-btn">Refresh Session</button>
-            <div id="driver-loading" style="display: none; color: white;">Loading drivers...</div>
-        </div>
+
+            <div class="graph-types-container">
+                <h3>Graph Types</h3>
+                <div class="graph-type-options">
+                    <label class="graph-type-option">
+                        <input type="checkbox" name="graph-type" value="laptimes" checked>
+                        Lap Times
+                    </label>
+                    <label class="graph-type-option">
+                        <input type="checkbox" name="graph-type" value="position">
+                        Race Position
+                    </label>
+                    <label class="graph-type-option">
+                        <input type="checkbox" name="graph-type" value="tyre">
+                        Tyre Stint
+                    </label>
+                    <label class="graph-type-option">
+                        <input type="checkbox" name="graph-type" value="quali">
+                        Qualifying Position
+                    </label>
+                </div>
+            </div>
         </div>
     </div>
-  
-    <!-- JS below -->
-    <script>
-        const selectedDrivers = new Set();
+
+<script>
+    const selectedDrivers = new Set();
+    const selectedGraphTypes = new Set(['laptimes']);
+
+    // Function to create driver buttons
+    function createDriverButtons(drivers, driverColors) {
+        const container = document.getElementById('driver-buttons-container');
+        container.innerHTML = '';
         
-        // Function to create driver buttons
-        function createDriverButtons(drivers, driverColors) {
-            const container = document.getElementById('driver-buttons-container');
-            container.innerHTML = ''; // Clear existing buttons
+        drivers.forEach(driver => {
+            const btn = document.createElement('button');
+            btn.className = 'driver-btn';
+            btn.dataset.driver = driver;
+            btn.dataset.color = driverColors[driver] || '#333';
+            btn.textContent = driver;
+            btn.style.backgroundColor = '#333';
             
-            drivers.forEach(driver => {
-                const btn = document.createElement('button');
-                btn.className = 'driver-btn';
-                btn.dataset.driver = driver;
-                btn.dataset.color = driverColors[driver] || '#333';
-                btn.textContent = driver;
-                btn.style.backgroundColor = '#333';
-                
-                btn.addEventListener('click', () => {
-                    btn.classList.toggle('active');
-                    if (btn.classList.contains('active')) {
-                        btn.style.backgroundColor = btn.dataset.color;
-                        selectedDrivers.add(btn.dataset.driver);
-                    } else {
-                        btn.style.backgroundColor = '#333';
-                        selectedDrivers.delete(btn.dataset.driver);
-                    }
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+                if (btn.classList.contains('active')) {
+                    btn.style.backgroundColor = btn.dataset.color;
+                    selectedDrivers.add(btn.dataset.driver);
+                } else {
+                    btn.style.backgroundColor = '#333';
+                    selectedDrivers.delete(btn.dataset.driver);
+                }
+            });
+            
+            container.appendChild(btn);
+        });
+    }
+
+    // Helper functions
+    function showError(message) {
+        const errorDiv = document.getElementById('error');
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+    }
+
+    function clearError() {
+        const errorDiv = document.getElementById('error');
+        errorDiv.textContent = "";
+        errorDiv.style.display = 'none';
+    }
+
+    function getGraphTitle(graphType) {
+        const titles = {
+            'laptimes': 'Lap Times Comparison',
+            'position': 'Race Position Changes',
+            'tyre': 'Tyre Stint Strategy',
+            'quali': 'Qualifying Results'
+        };
+        return titles[graphType] || graphType;
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', () => {
+        const yearDropdown = document.getElementById('year');
+        const raceDropdown = document.getElementById('race');
+
+        function loadRacesForYear(year) {
+            raceDropdown.innerHTML = '<option value="">Loading races...</option>';
+            
+            fetch('/get_races', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ year: year })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    raceDropdown.innerHTML = '<option value="">Error loading races</option>';
+                    showError(data.error);
+                    return;
+                }
+
+                raceDropdown.innerHTML = '';
+                data.races.forEach(race => {
+                    const option = document.createElement('option');
+                    option.value = race.value;
+                    option.textContent = race.name;
+                    raceDropdown.appendChild(option);
                 });
-                
-                container.appendChild(btn);
+
+                if (data.races.length > 0) {
+                    document.getElementById('load-drivers-btn').click();
+                }
+            })
+            .catch(error => {
+                raceDropdown.innerHTML = '<option value="">Error loading races</option>';
+                showError('Failed to load races: ' + error.message);
             });
         }
 
-        // Load available drivers for selected session
+        yearDropdown.addEventListener('change', () => {
+            loadRacesForYear(yearDropdown.value);
+        });
+
         document.getElementById('load-drivers-btn').addEventListener('click', () => {
             const selectedRace = document.getElementById('race').value;
             const selectedYear = document.getElementById('year').value;
@@ -129,10 +212,8 @@
             });
         });
 
-        // Generate graph and clear any loading text once done
+        // Generate graph
         document.getElementById('generate-btn').addEventListener('click', () => {
-
-            // Get the selected country and year
             const selectedRace = document.getElementById('race').value;
             const selectedYear = document.getElementById('year').value;
             clearError();
@@ -142,10 +223,11 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                     drivers: Array.from(selectedDrivers),
-                        race: selectedRace,
-                        year: selectedYear
-                    })
+                    drivers: Array.from(selectedDrivers),
+                    race: selectedRace,
+                    year: selectedYear,
+                    graph_types: Array.from(selectedGraphTypes)
+                })
             })
             .then(response => {
                 if (!response.ok) {
@@ -157,22 +239,51 @@
                 if (data.error) {
                     throw new Error(data.error);
                 }
-                
-                // Plotly.newPlot will replace the inner HTML of the 'plot' div
-                Plotly.newPlot('plot', {
-                    data: data.data,
-                    layout: data.layout
-                }).then(() => {
-                    // Clear any potential loading text if still visible
-                    document.getElementById('plot').innerHTML = "";
-                    // Re-plot the graph into the 'plot' div
-                    Plotly.newPlot('plot', {
-                        data: data.data,
-                        layout: data.layout
-                    });
-                    // Show the export button only
-                    document.getElementById('graph-controls').style.display = 'block';
+
+                const plotDiv = document.getElementById('plot');
+                plotDiv.innerHTML = '';
+
+                const graphsContainer = document.createElement('div');
+                graphsContainer.className = 'graphs-container';
+
+                const graphTypeOrder = ['laptimes', 'position', 'tyre', 'quali'];
+
+                graphTypeOrder.forEach(graphType => {
+                    const graphDiv = document.createElement('div');
+                    graphDiv.className = 'graph-item';
+                    graphDiv.id = `graph-${graphType}`;
+
+                    const title = document.createElement('h3');
+                    title.textContent = getGraphTitle(graphType);
+
+                    graphDiv.appendChild(title);
+                    graphsContainer.appendChild(graphDiv);
                 });
+
+                plotDiv.appendChild(graphsContainer);
+
+                data.selected_graphs.forEach(graphType => {
+                    if (data.figures[graphType]) {
+                        const graphDiv = document.getElementById(`graph-${graphType}`);
+                        if (graphDiv) {
+                            Plotly.newPlot(graphDiv, {
+                                data: data.figures[graphType].data,
+                                layout: data.figures[graphType].layout
+                            });
+                        }
+                    }
+                });
+
+                graphTypeOrder.forEach(graphType => {
+                    if (!data.selected_graphs.includes(graphType)) {
+                        const graphDiv = document.getElementById(`graph-${graphType}`);
+                        if (graphDiv) {
+                            graphDiv.style.display = 'none';
+                        }
+                    }
+                });
+
+                document.getElementById('graph-controls').style.display = 'block';
             })
             .catch(error => {
                 showError(error.message);
@@ -180,98 +291,66 @@
             });
         });
 
-        // Export functionality: when Export as PNG is clicked, generate and download the PNG image.
+        // Export functionality
         document.getElementById('export-btn').addEventListener('click', () => {
-            Plotly.toImage('plot', { format: 'png', height: 600, width: 1000 })
-            .then(url => {
-                // Create a temporary link to trigger download
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'lap_times_graph.png';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+            const graphItems = document.querySelectorAll('.graph-item');
+            if (graphItems.length === 0) return;
+
+            graphItems.forEach((item) => {
+                if (item.style.display !== 'none') {
+                    Plotly.toImage(item, { format: 'png', height: 800, width: 1200 })
+                    .then(url => {
+                        const graphType = item.id.replace('graph-', '');
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `f1_${graphType}_graph.png`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    });
+                }
             });
         });
 
-        function showError(message) {
-            const errorDiv = document.getElementById('error');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-        }
+        // Graph type checkbox handling
+        document.querySelectorAll('input[name="graph-type"]').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    selectedGraphTypes.add(e.target.value);
+                } else {
+                    selectedGraphTypes.delete(e.target.value);
+                }
 
-        function clearError() {
-            const errorDiv = document.getElementById('error');
-            errorDiv.textContent = "";
-            errorDiv.style.display = 'none';
-        }
-            // Add this to your existing JavaScript
-    const yearDropdown = document.getElementById('year');
-    const raceDropdown = document.getElementById('race');
-    
-    // Function to load races for selected year
-    function loadRacesForYear(year) {
-        raceDropdown.innerHTML = '<option value="">Loading races...</option>';
-        
-        fetch('/get_races', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ year: year })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                raceDropdown.innerHTML = '<option value="">Error loading races</option>';
-                showError(data.error);
-                return;
-            }
-            
-            raceDropdown.innerHTML = '';
-            data.races.forEach(race => {
-                const option = document.createElement('option');
-                option.value = race.value;
-                option.textContent = race.name;
-                raceDropdown.appendChild(option);
+                if (selectedGraphTypes.size === 0) {
+                    e.target.checked = true;
+                    selectedGraphTypes.add(e.target.value);
+                    showError('At least one graph type must be selected');
+                } else {
+                    clearError();
+                }
             });
-            
-            // After loading races, also load drivers for the first race
-            if (data.races.length > 0) {
-                document.getElementById('load-drivers-btn').click();
-            }
-        })
-        .catch(error => {
-            raceDropdown.innerHTML = '<option value="">Error loading races</option>';
-            showError('Failed to load races: ' + error.message);
         });
-    }
-    
-    // Load races when year changes
-    yearDropdown.addEventListener('change', () => {
-        const selectedYear = yearDropdown.value;
-        loadRacesForYear(selectedYear);
-    });
-    
-    // Load races for initial year on page load
-    document.addEventListener('DOMContentLoaded', () => {
-        loadRacesForYear(yearDropdown.value);
-    });
-    // Open the modal when the "Session Settings" button is clicked
-    document.getElementById('open-modal-btn').addEventListener('click', () => {
-        const modal = document.getElementById('settings-modal');
-        modal.style.display = 'flex'; // Use 'flex' to ensure proper centering
-    });
 
-    // Close modal when clicking the close button
-    document.getElementById('close-modal-btn').addEventListener('click', () => {
-        document.getElementById('settings-modal').style.display = 'none';
-    });
+        // Modal controls
+        document.getElementById('open-modal-btn').addEventListener('click', () => {
+            document.getElementById('settings-modal').style.display = 'flex';
+        });
 
-    // Close modal when clicking outside the modal content (on the overlay)
-    document.getElementById('settings-modal').addEventListener('click', (e) => {
-        if (e.target === document.getElementById('settings-modal')) {
+        document.getElementById('close-modal-btn').addEventListener('click', () => {
             document.getElementById('settings-modal').style.display = 'none';
-        }
+        });
+
+        document.getElementById('settings-modal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('settings-modal')) {
+                document.getElementById('settings-modal').style.display = 'none';
+            }
+        });
+
+        // Auto-load on page load
+        loadRacesForYear(yearDropdown.value);
+        document.getElementById('settings-modal').style.display = 'flex';
     });
-    </script>    
+</script>
+   
 </body>
 </html>
