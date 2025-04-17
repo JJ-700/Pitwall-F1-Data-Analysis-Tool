@@ -268,55 +268,80 @@ def create_tyre_figure(session, selected_drivers):
     return fig
 
 def create_quali_figure(session, selected_drivers):
+
     try:
         quali_session = fastf1.get_session(session.event.year, session.event['EventName'], 'Q')
         quali_session.load()
-    except Exception:
+    except Exception as e:
+        print(f"Failed to load qualifying session: {e}")
         return None
+
+    # Filter and group
+    laps = quali_session.laps.pick_drivers(selected_drivers).pick_quicklaps()
+    if laps.empty:
+        print("No laps found for selected drivers.")
+        return None
+
+    fastest_laps = laps.groupby("Driver").apply(lambda df: df.nsmallest(1, "LapTime")).reset_index(drop=True)
+    if fastest_laps.empty:
+        print("No fastest laps found.")
+        return None
+
+    fastest_laps = fastest_laps.sort_values(by="LapTime").reset_index(drop=True)
+
+    # Delta to pole
+    pole_time = fastest_laps.iloc[0]["LapTime"]
+    fastest_laps["DeltaToPole"] = fastest_laps["LapTime"] - pole_time
+    fastest_laps["DeltaToPoleSeconds"] = fastest_laps["DeltaToPole"].dt.total_seconds()
+    fastest_laps["LapTimeSeconds"] = fastest_laps["LapTime"].dt.total_seconds()
 
     fig = go.Figure()
-    has_data = False
 
-    for driver in selected_drivers:
+    for _, row in fastest_laps.iterrows():
+        driver = row["Driver"]
+        lap_time = row["LapTimeSeconds"]
+        delta = row["DeltaToPoleSeconds"]
+        position = row["Position"]
+
         try:
-            driver_laps = quali_session.laps.pick_drivers(driver).pick_fastest()
-            if len(driver_laps) == 0:
-                continue
-
-            position = driver_laps['Position'].iloc[0]
-            time = driver_laps['LapTime'].total_seconds()
-            
-            try:
-                driver_info = quali_session.get_driver(driver)
-                team_name = driver_info['TeamName']
-                if team_name == "Racing Bulls":
-                    team_name = "RB"
-                color = fastf1.plotting.team_color(team_name)
-            except Exception:
-                color = '#ffffff'
-            
-            fig.add_trace(go.Bar(
-                x=[driver],
-                y=[time],
-                name=f"{driver} ({team_name})",
-                marker_color=color,
-                hoverinfo='text',
-                hovertext=f"Driver: {driver}<br>Position: {position}<br>Time: {driver_laps['LapTime'].dt.total_seconds().iloc[0]:.3f}s"
-            ))
-            has_data = True
+            driver_info = quali_session.get_driver(driver)
+            team_name = driver_info['TeamName']
+            if team_name == "Racing Bulls":
+                team_name = "RB"
+            color = fastf1.plotting.team_color(team_name)
         except Exception:
-            continue
+            team_name = "Unknown"
+            color = "#CCCCCC"
 
-    if not has_data:
-        return None
+        fig.add_trace(go.Bar(
+            y=[driver],
+            x=[delta],
+            orientation='h',
+            name=f"{driver} ({team_name})",
+            marker_color=color,
+            hoverinfo='text',
+            hovertext=(
+                f"Driver: {driver}<br>"
+                f"Team: {team_name}<br>"
+                f"Position: {position}<br>"
+                f"Lap Time: {lap_time:.3f}s<br>"
+                f"Delta to Pole: {delta:.3f}s"
+            )
+        ))
 
     fig.update_layout(
-        title=f"Qualifying Results - {quali_session.event['EventName']} {quali_session.event.year}",
-        xaxis_title="Driver",
-        yaxis_title="Time (seconds)",
+        title=f"Qualifying - Delta to Fastest Selected <br>{quali_session.event['EventName']} {quali_session.event.year}",
+        xaxis_title="Delta to Fastest (s)",
+        yaxis_title="Driver",
+        yaxis=dict(
+            categoryorder='total ascending'  # pole sitter at top
+        ),
         template="plotly_dark",
-        showlegend=False
+        showlegend=False,
+        margin=dict(l=100, r=40, t=80, b=40),
+        height=400  # consistent with other graphs
     )
+
     return fig
 
 if __name__ == "__main__":

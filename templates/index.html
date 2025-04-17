@@ -298,7 +298,7 @@
 
             graphItems.forEach((item) => {
                 if (item.style.display !== 'none') {
-                    Plotly.toImage(item, { format: 'png', height: 800, width: 1200 })
+                    Plotly.toImage(item, { format: 'png', height: 1200, width: 1800 }) // Expoert as HD PNG
                     .then(url => {
                         const graphType = item.id.replace('graph-', '');
                         const a = document.createElement('a');

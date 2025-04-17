@@ -223,6 +223,7 @@ button:hover {
   height: 400px; /* Fixed height for consistent grid */
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
 .graph-item h3 {
