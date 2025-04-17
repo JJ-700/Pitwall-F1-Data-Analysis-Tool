@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import fastf1
 import plotly.graph_objs as go
+import plotly.io as pio
 import pandas as pd
 
 app = Flask(__name__)
@@ -93,32 +94,31 @@ def get_graph():
     if 'laptimes' in graph_types:
         fig = create_lap_time_figure(session, selected_drivers)
         if fig:
-            figures['laptimes'] = fig
+            figures['laptimes'] = fig.to_dict()  # Convert directly to dict
     
     if 'position' in graph_types:
         fig = create_position_figure(session, selected_drivers)
         if fig:
-            figures['position'] = fig
+            figures['position'] = fig.to_dict()  # Convert directly to dict
     
     if 'tyre' in graph_types:
         fig = create_tyre_figure(session, selected_drivers)
         if fig:
-            figures['tyre'] = fig
+            figures['tyre'] = fig.to_dict()  # Convert directly to dict
     
     if 'quali' in graph_types:
         fig = create_quali_figure(session, selected_drivers)
         if fig:
-            figures['quali'] = fig
+            figures['quali'] = fig.to_dict()  # Convert directly to dict
 
     if not figures:
         return jsonify({"error": "No valid data found for selected graph types"}), 400
 
     return jsonify({
-        'figures': {k: {'data': [trace.to_plotly_json() for trace in v.data], 
-                    'layout': v.layout.to_plotly_json()} 
-                  for k, v in figures.items()},
+        'figures': figures,  # Already converted to dict
         'selected_graphs': list(figures.keys())
     })
+
 
 def create_lap_time_figure(session, selected_drivers):
     fig = go.Figure()
