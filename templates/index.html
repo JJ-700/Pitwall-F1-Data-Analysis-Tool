@@ -372,17 +372,29 @@
             }
         });
 
-        document.addEventListener('keydown', (e) => {
+        document.addEventListener('keydown', async (e) => {
             if (e.key === 'Escape') {
-                document.querySelectorAll('.graph-item.enlarged').forEach(item => {
-                    item.classList.remove('enlarged');
-                    Plotly.Plots.resize(item);
-                });
-                document.querySelectorAll('.graph-item.hide').forEach(item => item.classList.remove('hide'));
+                const enlargedItems = document.querySelectorAll('.graph-item.enlarged');
+                const hiddenItems = document.querySelectorAll('.graph-item.hide');
+
+                // Remove classes first
+                enlargedItems.forEach(item => item.classList.remove('enlarged'));
+                hiddenItems.forEach(item => item.classList.remove('hide'));
+
+                // Resize and force autoscale
+                const allGraphItems = document.querySelectorAll('.graph-item');
+                for (const graph of allGraphItems) {
+                    await Plotly.Plots.resize(graph);
+                    await Plotly.relayout(graph, { autosize: true });
+                }
+                for (const graph of allGraphItems) {
+                    await Plotly.Plots.resize(graph);
+                    await Plotly.relayout(graph, { autosize: true });
+                }
             }
         });
     });
 </script>
-   
+
 </body>
 </html>
