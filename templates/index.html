@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>F1 Interactive Lap Time Comparison</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>\
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://unpkg.com/heroicons@2.0.13/dist/heroicons.min.js"></script> <!-- ADD ICONS LATER -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css')}}">
 </head>
@@ -91,7 +91,7 @@
     function createDriverButtons(drivers, driverColors) {
         const container = document.getElementById('driver-buttons-container');
         container.innerHTML = '';
-        
+            
         drivers.forEach(driver => {
             const btn = document.createElement('button');
             btn.className = 'driver-btn';
@@ -358,6 +358,29 @@
         // Auto-load on page load
         loadRacesForYear(yearDropdown.value);
         document.getElementById('settings-modal').style.display = 'flex';
+
+        // Enlarge on title double-click
+        document.getElementById('plot').addEventListener('dblclick', (e) => {
+            if (e.target.tagName === 'H3') {
+                const graphItem = e.target.parentElement;
+                document.querySelectorAll('.graph-item').forEach(item => {
+                    if (item !== graphItem) item.classList.add('hide');
+                });
+                graphItem.classList.add('enlarged');
+                // force Plotly to resize to new container dimensions
+                Plotly.Plots.resize(graphItem);
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.graph-item.enlarged').forEach(item => {
+                    item.classList.remove('enlarged');
+                    Plotly.Plots.resize(item);
+                });
+                document.querySelectorAll('.graph-item.hide').forEach(item => item.classList.remove('hide'));
+            }
+        });
     });
 </script>
    

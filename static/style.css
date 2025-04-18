@@ -250,3 +250,26 @@ button:hover {
 .open-modal-btn:hover {
     background-color: #555;
 }
+.graphs-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+.graph-item {
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+.graph-item.enlarged {
+    grid-column: 1 / -1;
+    height: 80vh;
+    position: relative;
+    z-index: 10;
+}
+.graph-item.enlarged .js-plotly-plot,
+.graph-item.enlarged .plotly {
+    width: 100% !important;
+    height: 100% !important;
+}
+.graph-item.hide {
+    display: none;
+}   
