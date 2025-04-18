@@ -175,10 +175,19 @@ def create_position_figure(session, selected_drivers):
 
     for driver in selected_drivers:
         try:
+            # pick only this driver's laps
             driver_laps = session.laps.pick_drivers(driver)
-            positions = driver_laps['Position'].tolist()
-            lap_numbers = driver_laps['LapNumber'].tolist()
-            
+
+            # drop any rows where Position or LapNumber is missing
+            driver_laps = driver_laps.dropna(subset=['Position', 'LapNumber'])
+            if driver_laps.empty:
+                continue
+
+            # cast to ints so we don’t get floats or NaN in the JSON
+            lap_numbers = driver_laps['LapNumber'].astype(int).tolist()
+            positions   = driver_laps['Position'].astype(int).tolist()
+
+            # get a safe color for the team
             try:
                 driver_info = session.get_driver(driver)
                 team_name = driver_info['TeamName']
@@ -187,7 +196,8 @@ def create_position_figure(session, selected_drivers):
                 color = fastf1.plotting.team_color(team_name)
             except Exception:
                 color = '#ffffff'
-            
+
+            # add the trace
             fig.add_trace(go.Scatter(
                 x=lap_numbers,
                 y=positions,
@@ -198,7 +208,9 @@ def create_position_figure(session, selected_drivers):
                 line=dict(width=2, color=color)
             ))
             has_data = True
+
         except Exception:
+            # if anything goes wrong for this driver, skip them
             continue
 
     if not has_data:
@@ -210,7 +222,7 @@ def create_position_figure(session, selected_drivers):
         yaxis_title="Position",
         template="plotly_dark",
         hovermode="closest",
-        yaxis=dict(autorange="reversed")
+        yaxis=dict(autorange="reversed"),
     )
     return fig
 
@@ -263,7 +275,7 @@ def create_tyre_figure(session, selected_drivers):
         xaxis_title="Lap Number",
         yaxis_title="Driver",
         template="plotly_dark",
-        showlegend=True
+        showlegend=False
     )
     return fig
 
