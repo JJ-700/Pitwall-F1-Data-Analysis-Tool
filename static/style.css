@@ -273,3 +273,30 @@ button:hover {
 .graph-item.hide {
     display: none;
 }   
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding-top: 50px;
+    color: white;
+}
+
+.loading-flag {
+    font-size: 10rem;
+    opacity: 0.7;
+    animation: pulse 2s infinite;
+    margin-bottom: 20px;
+}
+
+.loading-text {
+    font-size: 2rem;
+    opacity: 0.8;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}

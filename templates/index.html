@@ -221,13 +221,51 @@
             });
         });
 
-        // Generate graph
-        document.getElementById('generate-btn').addEventListener('click', () => {
-            const selectedRace = document.getElementById('race').value;
-            const selectedYear = document.getElementById('year').value;
-            clearError();
-            document.getElementById('plot').innerHTML = '<div style="color:white; text-align:center; padding-top:50px;">Loading interactive graph...</div>';
-            
+// Generate graph - corrected version
+    document.getElementById('generate-btn').addEventListener('click', () => {
+        const selectedRace = document.getElementById('race').value;
+        const selectedYear = document.getElementById('year').value;
+        const raceName = document.getElementById('race').options[document.getElementById('race').selectedIndex].text;
+
+        // Country flag mapping
+        const raceToCountry = {
+        'Bahrain Grand Prix': 'bahrain',
+        'Saudi Arabian Grand Prix': 'saudi-arabia',
+        'Australian Grand Prix': 'australia',
+        'Japanese Grand Prix': 'japan',
+        'Chinese Grand Prix': 'china',
+        'Miami Grand Prix': 'united-states',
+        'Emilia Romagna Grand Prix': 'italy',
+        'Monaco Grand Prix': 'monaco',
+        'Canadian Grand Prix': 'canada',
+        'Spanish Grand Prix': 'spain',
+        'Austrian Grand Prix': 'austria',
+        'British Grand Prix': 'united-kingdom',
+        'Hungarian Grand Prix': 'hungary',
+        'Belgian Grand Prix': 'belgium',
+        'Dutch Grand Prix': 'netherlands',
+        'Italian Grand Prix': 'italy',
+        'Azerbaijan Grand Prix': 'azerbaijan',
+        'Singapore Grand Prix': 'singapore',
+        'United States Grand Prix': 'united-states',
+        'Mexico City Grand Prix': 'mexico',
+        'São Paulo Grand Prix': 'brazil',
+        'Las Vegas Grand Prix': 'united-states',
+        'Qatar Grand Prix': 'qatar',
+        'Abu Dhabi Grand Prix': 'united-arab-emirates'
+        };
+
+        const flagName = raceToCountry[raceName] || 'country-flag-default';
+
+        document.getElementById('plot').innerHTML = `
+        <div class="loading-container">
+            <img src="/static/${flagName}-flag.png"
+                class="loading-flag pulsate"
+                alt="${raceName} flag"
+                onerror="this.src='/static/country-flag-default.png'; this.onerror=null;">
+        </div>
+        `;
+        
             fetch('/get_graph', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -249,57 +287,76 @@
                     throw new Error(data.error);
                 }
 
+                // Update loading display with actual flag if available
                 const plotDiv = document.getElementById('plot');
-                plotDiv.innerHTML = '';
+                plotDiv.innerHTML = `
+                    <div class="loading-container">
+                        <div class="loading-flag">${data.flag_emoji || '🏁'}</div>
+                        <div class="loading-text">Loading ${data.event_name || 'race'} data...</div>
+                    </div>  
+                `;
 
-                const graphsContainer = document.createElement('div');
-                graphsContainer.className = 'graphs-container';
+                // Give a small delay for the loading message to appear
+                setTimeout(() => {
+                    // Now create the actual graphs
+                    plotDiv.innerHTML = '';
 
-                const graphTypeOrder = ['laptimes', 'position', 'tyre', 'quali'];
+                    const graphsContainer = document.createElement('div');
+                    graphsContainer.className = 'graphs-container';
 
-                graphTypeOrder.forEach(graphType => {
-                    const graphDiv = document.createElement('div');
-                    graphDiv.className = 'graph-item';
-                    graphDiv.id = `graph-${graphType}`;
+                    const graphTypeOrder = ['laptimes', 'position', 'tyre', 'quali'];
 
-                    const title = document.createElement('h3');
-                    title.textContent = getGraphTitle(graphType);
+                    graphTypeOrder.forEach(graphType => {
+                        const graphDiv = document.createElement('div');
+                        graphDiv.className = 'graph-item';
+                        graphDiv.id = `graph-${graphType}`;
 
-                    graphDiv.appendChild(title);
-                    graphsContainer.appendChild(graphDiv);
-                });
+                        const title = document.createElement('h3');
+                        title.textContent = getGraphTitle(graphType);
 
-                plotDiv.appendChild(graphsContainer);
+                        graphDiv.appendChild(title);
+                        graphsContainer.appendChild(graphDiv);
+                    });
 
-                data.selected_graphs.forEach(graphType => {
-                    if (data.figures[graphType]) {
-                        const graphDiv = document.getElementById(`graph-${graphType}`);
-                        if (graphDiv) {
-                            Plotly.newPlot(graphDiv, {
-                                data: data.figures[graphType].data,
-                                layout: data.figures[graphType].layout
-                            });
+                    plotDiv.appendChild(graphsContainer);
+
+                    data.selected_graphs.forEach(graphType => {
+                        if (data.figures[graphType]) {
+                            const graphDiv = document.getElementById(`graph-${graphType}`);
+                            if (graphDiv) {
+                                Plotly.newPlot(graphDiv, {
+                                    data: data.figures[graphType].data,
+                                    layout: data.figures[graphType].layout
+                                });
+                            }
                         }
-                    }
-                });
+                    });
 
-                graphTypeOrder.forEach(graphType => {
-                    if (!data.selected_graphs.includes(graphType)) {
-                        const graphDiv = document.getElementById(`graph-${graphType}`);
-                        if (graphDiv) {
-                            graphDiv.style.display = 'none';
+                    graphTypeOrder.forEach(graphType => {
+                        if (!data.selected_graphs.includes(graphType)) {
+                            const graphDiv = document.getElementById(`graph-${graphType}`);
+                            if (graphDiv) {
+                                graphDiv.style.display = 'none';
+                            }
                         }
-                    }
-                });
+                    });
 
-                document.getElementById('graph-controls').style.display = 'block';
+                    document.getElementById('graph-controls').style.display = 'block';
+                }, 100); // Small delay to ensure loading message is visible
             })
             .catch(error => {
                 showError(error.message);
                 console.error('Error:', error);
+                // Keep the loading display but show error
+                document.getElementById('plot').innerHTML = `
+                    <div class="loading-container">
+                        <div class="loading-flag">⚠️</div>
+                        <div class="loading-text">Error loading data</div>
+                        <div style="color: #ff6b6b; margin-top: 10px;">${error.message}</div>
+                    </div>
+                `;
             });
         });
-
         // Export functionality
         document.getElementById('export-btn').addEventListener('click', () => {
             const graphItems = document.querySelectorAll('.graph-item');
@@ -381,16 +438,15 @@
                 enlargedItems.forEach(item => item.classList.remove('enlarged'));
                 hiddenItems.forEach(item => item.classList.remove('hide'));
 
-                // Resize and force autoscale
+                // Alternative 2: Use setTimeout to allow DOM to update before resizing
                 const allGraphItems = document.querySelectorAll('.graph-item');
-                for (const graph of allGraphItems) {
-                    await Plotly.Plots.resize(graph);
-                    await Plotly.relayout(graph, { autosize: true });
-                }
-                for (const graph of allGraphItems) {
-                    await Plotly.Plots.resize(graph);
-                    await Plotly.relayout(graph, { autosize: true });
-                }
+                setTimeout(() => {
+                    allGraphItems.forEach(graph => {
+                        Plotly.Plots.resize(graph).then(() => {
+                            Plotly.relayout(graph, {autosize: true});
+                        });
+                    });
+                }, 150); // Small delay to ensure CSS changes are applied THIS IS CRITICAL
             }
         });
     });

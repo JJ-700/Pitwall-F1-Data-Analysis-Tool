@@ -10,6 +10,10 @@ app.secret_key = "supersecretkey"
 import fastf1.plotting
 fastf1.plotting.setup_mpl(mpl_timedelta_support=True, color_scheme='fastf1', misc_mpl_mods=False)
 
+#/////////////HELPER FUNCTIONS BELOW////////////////////
+
+#////////////////APP ROUTES BELOW///////////////////////
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -86,6 +90,7 @@ def get_graph():
     try:
         session = fastf1.get_session(int(selected_year), selected_race, 'R')
         session.load()
+
     except Exception as e:
         return jsonify({"error": f"Failed to load session data: {str(e)}"}), 500
 
