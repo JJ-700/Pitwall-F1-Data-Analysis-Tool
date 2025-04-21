@@ -306,7 +306,7 @@ def create_quali_figure(session, selected_drivers):
 
     fastest_laps = fastest_laps.sort_values(by="LapTime").reset_index(drop=True)
 
-    # Delta to pole
+    # Delta to pole (where pole is the fastest selected lap time)
     pole_time = fastest_laps.iloc[0]["LapTime"]
     fastest_laps["DeltaToPole"] = fastest_laps["LapTime"] - pole_time
     fastest_laps["DeltaToPoleSeconds"] = fastest_laps["DeltaToPole"].dt.total_seconds()
@@ -340,7 +340,6 @@ def create_quali_figure(session, selected_drivers):
             hovertext=(
                 f"Driver: {driver}<br>"
                 f"Team: {team_name}<br>"
-                f"Position: {position}<br>"
                 f"Lap Time: {lap_time:.3f}s<br>"
                 f"Delta to Pole: {delta:.3f}s"
             )

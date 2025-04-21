@@ -2,23 +2,68 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>F1 Interactive Lap Time Comparison</title>
+    <title>Pitwall F1</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <script src="https://unpkg.com/heroicons@2.0.13/dist/heroicons.min.js"></script> <!-- ADD ICONS LATER -->
+    <script src="https://unpkg.com/heroicons@2.0.13/dist/heroicons.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css')}}">
 </head>
 <body>
     <div class="header">
         <div class="header-content">
-            <h1>F1 Interactive Metric Analysis</h1>
-            <div class="header-buttons">
-                <button id="open-modal-btn" class="open-modal-btn">Session Settings</button>
-                <div id="graph-controls" style="display: none;">
-                    <button id="export-btn" class="control-btn">Export as PNG</button>
+            <h1>Pitwall F1</h1>
+            <div class="header-controls">
+                <!-- Session Settings Section -->
+                <div class="session-settings">
+                    <div class="dropdown-container">
+                        <label for="year">Year</label>
+                        <select id="year" name="year">
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                        </select>
+                    </div>
+            
+                    <div class="dropdown-container">
+                        <label for="race">Race</label>
+                        <select id="race" name="race">
+                            <!-- Options will be loaded dynamically -->
+                        </select>
+                    </div>
+                </div>            
+
+                <!-- Graph Type Selection -->
+                <div class="graph-type-selection">
+                    <div class="graph-type-options">
+                        <label class="graph-type-option">
+                            <input type="checkbox" name="graph-type" value="laptimes" checked>
+                            Lap Times
+                        </label>
+                        <label class="graph-type-option">
+                            <input type="checkbox" name="graph-type" value="position">
+                            Position
+                        </label>
+                        <label class="graph-type-option">
+                            <input type="checkbox" name="graph-type" value="tyre">
+                            Tyres
+                        </label>
+                        <label class="graph-type-option">
+                            <input type="checkbox" name="graph-type" value="quali">
+                            Quali
+                        </label>
+                    </div>
                 </div>
-                <button id="generate-btn">Generate Interactive Graph</button>
+
+                <button id="load-drivers-btn">Refresh Session</button>
+                <div id="driver-loading" style="display: none; color: white;">Loading drivers...</div>
+
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button id="generate-btn">Generate Graphs</button>
+                    <div id="graph-controls" style="display: none;">
+                        <button id="export-btn" class="control-btn">Export as PNG</button>
+                    </div>
+                </div>
             </div>
-            <div id="error" class="error"></div>
         </div>
     </div>    
     
@@ -32,57 +77,6 @@
         </div>
     </div>
 
-    <!-- Modal Overlay -->
-    <div id="settings-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Session Settings</h2>
-                <button id="close-modal-btn" class="close-modal-btn">&times;</button>
-            </div>
-        
-            <div class="dropdowns-inline">
-                <div class="dropdown-container">
-                    <label for="year">Year</label>
-                    <select id="year" name="year">
-                        <option value="2025">2025</option>
-                        <option value="2024">2024</option>
-                    </select>
-                </div>
-        
-                <div class="dropdown-container">
-                    <label for="race">Race</label>
-                    <select id="race" name="race">
-                        <!-- Options will be loaded dynamically -->
-                    </select>
-                </div>
-        
-                <button id="load-drivers-btn">Refresh Session</button>
-                <div id="driver-loading" style="display: none; color: white;">Loading drivers...</div>
-            </div>
-
-            <div class="graph-types-container">
-                <h3>Graph Types</h3>
-                <div class="graph-type-options">
-                    <label class="graph-type-option">
-                        <input type="checkbox" name="graph-type" value="laptimes" checked>
-                        Lap Times
-                    </label>
-                    <label class="graph-type-option">
-                        <input type="checkbox" name="graph-type" value="position">
-                        Race Position
-                    </label>
-                    <label class="graph-type-option">
-                        <input type="checkbox" name="graph-type" value="tyre">
-                        Tyre Stint
-                    </label>
-                    <label class="graph-type-option">
-                        <input type="checkbox" name="graph-type" value="quali">
-                        Qualifying Position
-                    </label>
-                </div>
-            </div>
-        </div>
-    </div>
 <script>
     const selectedDrivers = new Set();
     const selectedGraphTypes = new Set(['laptimes']);
@@ -221,51 +215,57 @@
             });
         });
 
-// Generate graph - corrected version
-    document.getElementById('generate-btn').addEventListener('click', () => {
-        const selectedRace = document.getElementById('race').value;
-        const selectedYear = document.getElementById('year').value;
-        const raceName = document.getElementById('race').options[document.getElementById('race').selectedIndex].text;
+        // Generate graph
+        document.getElementById('generate-btn').addEventListener('click', () => {
+            const selectedRace = document.getElementById('race').value;
+            const selectedYear = document.getElementById('year').value;
+            const selectedDrivers = document.querySelectorAll(".driver-button.selected");
+            const raceName = document.getElementById('race').options[document.getElementById('race').selectedIndex].text;
 
-        // Country flag mapping
-        const raceToCountry = {
-        'Bahrain Grand Prix': 'bahrain',
-        'Saudi Arabian Grand Prix': 'saudi-arabia',
-        'Australian Grand Prix': 'australia',
-        'Japanese Grand Prix': 'japan',
-        'Chinese Grand Prix': 'china',
-        'Miami Grand Prix': 'united-states',
-        'Emilia Romagna Grand Prix': 'italy',
-        'Monaco Grand Prix': 'monaco',
-        'Canadian Grand Prix': 'canada',
-        'Spanish Grand Prix': 'spain',
-        'Austrian Grand Prix': 'austria',
-        'British Grand Prix': 'united-kingdom',
-        'Hungarian Grand Prix': 'hungary',
-        'Belgian Grand Prix': 'belgium',
-        'Dutch Grand Prix': 'netherlands',
-        'Italian Grand Prix': 'italy',
-        'Azerbaijan Grand Prix': 'azerbaijan',
-        'Singapore Grand Prix': 'singapore',
-        'United States Grand Prix': 'united-states',
-        'Mexico City Grand Prix': 'mexico',
-        'São Paulo Grand Prix': 'brazil',
-        'Las Vegas Grand Prix': 'united-states',
-        'Qatar Grand Prix': 'qatar',
-        'Abu Dhabi Grand Prix': 'united-arab-emirates'
-        };
+            if (selectedDrivers.length === 0) {
+                alert("Please select at least one driver.");
+                return; // Stop the function if no driver selected MAKE THIS NICER IT WORKS BUT IS UGLY RN
+            }
 
-        const flagName = raceToCountry[raceName] || 'country-flag-default';
+            // Country flag mapping
+            const raceToCountry = {
+            'Bahrain Grand Prix': 'bahrain',
+            'Saudi Arabian Grand Prix': 'saudi-arabia',
+            'Australian Grand Prix': 'australia',
+            'Japanese Grand Prix': 'japan',
+            'Chinese Grand Prix': 'china',
+            'Miami Grand Prix': 'united-states',
+            'Emilia Romagna Grand Prix': 'italy',
+            'Monaco Grand Prix': 'monaco',
+            'Canadian Grand Prix': 'canada',
+            'Spanish Grand Prix': 'spain',
+            'Austrian Grand Prix': 'austria',
+            'British Grand Prix': 'united-kingdom',
+            'Hungarian Grand Prix': 'hungary',
+            'Belgian Grand Prix': 'belgium',
+            'Dutch Grand Prix': 'netherlands',
+            'Italian Grand Prix': 'italy',
+            'Azerbaijan Grand Prix': 'azerbaijan',
+            'Singapore Grand Prix': 'singapore',
+            'United States Grand Prix': 'united-states',
+            'Mexico City Grand Prix': 'mexico',
+            'São Paulo Grand Prix': 'brazil',
+            'Las Vegas Grand Prix': 'united-states',
+            'Qatar Grand Prix': 'qatar',
+            'Abu Dhabi Grand Prix': 'united-arab-emirates'
+            };
 
-        document.getElementById('plot').innerHTML = `
-        <div class="loading-container">
-            <img src="/static/${flagName}-flag.png"
-                class="loading-flag pulsate"
-                alt="${raceName} flag"
-                onerror="this.src='/static/country-flag-default.png'; this.onerror=null;">
-        </div>
-        `;
-        
+            const flagName = raceToCountry[raceName] || 'country-flag-default';
+
+            document.getElementById('plot').innerHTML = `
+            <div class="loading-container">
+                <img src="/static/${flagName}-flag.png"
+                    class="loading-flag pulsate"
+                    alt="${raceName} flag"
+                    onerror="this.src='/static/country-flag-default.png'; this.onerror=null;">
+            </div>
+            `;
+            
             fetch('/get_graph', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -357,6 +357,7 @@
                 `;
             });
         });
+
         // Export functionality
         document.getElementById('export-btn').addEventListener('click', () => {
             const graphItems = document.querySelectorAll('.graph-item');
@@ -364,7 +365,7 @@
 
             graphItems.forEach((item) => {
                 if (item.style.display !== 'none') {
-                    Plotly.toImage(item, { format: 'png', height: 1200, width: 1800 }) // Expoert as HD PNG
+                    Plotly.toImage(item, { format: 'png', height: 1200, width: 1800 })
                     .then(url => {
                         const graphType = item.id.replace('graph-', '');
                         const a = document.createElement('a');
@@ -396,25 +397,6 @@
                 }
             });
         });
-
-        // Modal controls
-        document.getElementById('open-modal-btn').addEventListener('click', () => {
-            document.getElementById('settings-modal').style.display = 'flex';
-        });
-
-        document.getElementById('close-modal-btn').addEventListener('click', () => {
-            document.getElementById('settings-modal').style.display = 'none';
-        });
-
-        document.getElementById('settings-modal').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('settings-modal')) {
-                document.getElementById('settings-modal').style.display = 'none';
-            }
-        });
-
-        // Auto-load on page load
-        loadRacesForYear(yearDropdown.value);
-        document.getElementById('settings-modal').style.display = 'flex';
 
         // Enlarge on title double-click
         document.getElementById('plot').addEventListener('dblclick', (e) => {
@@ -449,6 +431,9 @@
                 }, 150); // Small delay to ensure CSS changes are applied THIS IS CRITICAL
             }
         });
+
+        // Auto-load on page load
+        loadRacesForYear(yearDropdown.value);
     });
 </script>
 
