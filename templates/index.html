@@ -188,8 +188,13 @@
             const selectedRace = document.getElementById('race').value;
             const selectedYear = document.getElementById('year').value;
             
+            // Clear existing UI elements
             document.getElementById('driver-loading').style.display = 'block';
             document.getElementById('driver-buttons-container').innerHTML = '';
+            document.getElementById('plot').innerHTML = ''; // Clear graphs
+            document.getElementById('graph-controls').style.display = 'none'; // Hide graph controls
+            
+            // Clear selected drivers
             selectedDrivers.clear();
             
             fetch('/get_drivers', {
@@ -219,13 +224,8 @@
         document.getElementById('generate-btn').addEventListener('click', () => {
             const selectedRace = document.getElementById('race').value;
             const selectedYear = document.getElementById('year').value;
-            const selectedDrivers = document.querySelectorAll(".driver-button.selected");
+            const selectedDrivers = document.querySelectorAll(".driver-btn.active");
             const raceName = document.getElementById('race').options[document.getElementById('race').selectedIndex].text;
-
-            if (selectedDrivers.length === 0) {
-                alert("Please select at least one driver.");
-                return; // Stop the function if no driver selected MAKE THIS NICER IT WORKS BUT IS UGLY RN
-            }
 
             // Country flag mapping
             const raceToCountry = {
@@ -258,19 +258,22 @@
             const flagName = raceToCountry[raceName] || 'country-flag-default';
 
             document.getElementById('plot').innerHTML = `
-            <div class="loading-container">
-                <img src="/static/${flagName}-flag.png"
-                    class="loading-flag pulsate"
-                    alt="${raceName} flag"
-                    onerror="this.src='/static/country-flag-default.png'; this.onerror=null;">
-            </div>
+                <div class="loading-container-row">
+                     <!-- <img src="/static/${flagName}-flag.png"
+                        class="country-flag"
+                        alt="${raceName} flag"
+                        onerror="this.src='/static/country-flag-default.png'; this.onerror=null;"> -->
+                    <img src="/static/PNG Tyre.png"
+                        class="spinning-tyre"
+                        alt="Spinning Tyre">
+                </div>
             `;
-            
+
             fetch('/get_graph', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    drivers: Array.from(selectedDrivers),
+                    drivers: Array.from(selectedDrivers).map(driverBtn => driverBtn.dataset.driver),
                     race: selectedRace,
                     year: selectedYear,
                     graph_types: Array.from(selectedGraphTypes)
@@ -287,10 +290,10 @@
                     throw new Error(data.error);
                 }
 
-                // Update loading display with actual flag if available
+                // Update loading display with chequered flag at the end
                 const plotDiv = document.getElementById('plot');
                 plotDiv.innerHTML = `
-                    <div class="loading-container">
+                    <div class="loading-container-row">
                         <div class="loading-flag">${data.flag_emoji || '🏁'}</div>
                         <div class="loading-text">Loading ${data.event_name || 'race'} data...</div>
                     </div>  

@@ -341,7 +341,7 @@ def create_quali_figure(session, selected_drivers):
                 f"Driver: {driver}<br>"
                 f"Team: {team_name}<br>"
                 f"Lap Time: {lap_time:.3f}s<br>"
-                f"Delta to Pole: {delta:.3f}s"
+                f"Delta to Fastest: {delta:.3f}s"
             )
         ))
 
