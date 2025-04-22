@@ -91,7 +91,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (data.races.length > 0) {
-                document.getElementById('load-drivers-btn').click();
+                raceDropdown.value = data.races[0].value;
+                loadDrivers();
             }
         })
         .catch(error => {
@@ -100,36 +101,24 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    yearDropdown.addEventListener('change', () => {
-        loadRacesForYear(yearDropdown.value);
-    });
-
-    document.getElementById('load-drivers-btn').addEventListener('click', () => {
+    function loadDrivers() {
         const selectedRace = document.getElementById('race').value;
         const selectedYear = document.getElementById('year').value;
         const driverContainer = document.getElementById('driver-buttons-container');
         
-        // Clear existing elements and show loading IN ONE PLACE
         driverContainer.innerHTML = '<div class="loading-text-drivers">Loading drivers...</div>';
         document.getElementById('plot').innerHTML = '';
         document.getElementById('graph-controls').style.display = 'none';
-        
-        // Clear selected drivers
         selectedDrivers.clear();
         
         fetch('/get_drivers', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                race: selectedRace,
-                year: selectedYear
-            })
+            body: JSON.stringify({ race: selectedRace, year: selectedYear })
         })
         .then(response => response.json())
         .then(data => {
-            // Clear loading text by resetting container
             driverContainer.innerHTML = '';
-            
             if (data.error) {
                 showError(data.error);
             } else {
@@ -137,55 +126,61 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         })
         .catch(error => {
-            // Clear loading text and show error
             driverContainer.innerHTML = '';
             showError('Failed to load drivers: ' + error.message);
         });
+    }
+
+    yearDropdown.addEventListener('change', () => {
+        loadRacesForYear(yearDropdown.value);
     });
 
-    // Generate graph
+    raceDropdown.addEventListener('change', () => {
+        loadDrivers();
+    });
+
     document.getElementById('generate-btn').addEventListener('click', () => {
         const selectedRace = document.getElementById('race').value;
         const selectedYear = document.getElementById('year').value;
         const selectedDrivers = document.querySelectorAll(".driver-btn.active");
         const raceName = document.getElementById('race').options[document.getElementById('race').selectedIndex].text;
 
-        // Country flag mapping
+        if (selectedDrivers.length === 0) {
+            alert("Please select at least one driver before generating the graph.");
+            return;
+        }
+
         const raceToCountry = {
-        'Bahrain Grand Prix': 'bahrain',
-        'Saudi Arabian Grand Prix': 'saudi-arabia',
-        'Australian Grand Prix': 'australia',
-        'Japanese Grand Prix': 'japan',
-        'Chinese Grand Prix': 'china',
-        'Miami Grand Prix': 'united-states',
-        'Emilia Romagna Grand Prix': 'italy',
-        'Monaco Grand Prix': 'monaco',
-        'Canadian Grand Prix': 'canada',
-        'Spanish Grand Prix': 'spain',
-        'Austrian Grand Prix': 'austria',
-        'British Grand Prix': 'united-kingdom',
-        'Hungarian Grand Prix': 'hungary',
-        'Belgian Grand Prix': 'belgium',
-        'Dutch Grand Prix': 'netherlands',
-        'Italian Grand Prix': 'italy',
-        'Azerbaijan Grand Prix': 'azerbaijan',
-        'Singapore Grand Prix': 'singapore',
-        'United States Grand Prix': 'united-states',
-        'Mexico City Grand Prix': 'mexico',
-        'São Paulo Grand Prix': 'brazil',
-        'Las Vegas Grand Prix': 'united-states',
-        'Qatar Grand Prix': 'qatar',
-        'Abu Dhabi Grand Prix': 'united-arab-emirates'
+            'Bahrain Grand Prix': 'bahrain',
+            'Saudi Arabian Grand Prix': 'saudi-arabia',
+            'Australian Grand Prix': 'australia',
+            'Japanese Grand Prix': 'japan',
+            'Chinese Grand Prix': 'china',
+            'Miami Grand Prix': 'united-states',
+            'Emilia Romagna Grand Prix': 'italy',
+            'Monaco Grand Prix': 'monaco',
+            'Canadian Grand Prix': 'canada',
+            'Spanish Grand Prix': 'spain',
+            'Austrian Grand Prix': 'austria',
+            'British Grand Prix': 'united-kingdom',
+            'Hungarian Grand Prix': 'hungary',
+            'Belgian Grand Prix': 'belgium',
+            'Dutch Grand Prix': 'netherlands',
+            'Italian Grand Prix': 'italy',
+            'Azerbaijan Grand Prix': 'azerbaijan',
+            'Singapore Grand Prix': 'singapore',
+            'United States Grand Prix': 'united-states',
+            'Mexico City Grand Prix': 'mexico',
+            'São Paulo Grand Prix': 'brazil',
+            'Las Vegas Grand Prix': 'united-states',
+            'Qatar Grand Prix': 'qatar',
+            'Abu Dhabi Grand Prix': 'united-arab-emirates'
         };
 
         const flagName = raceToCountry[raceName] || 'country-flag-default';
 
         document.getElementById('plot').innerHTML = `
             <div class="loading-container-row">
-                 <!-- <img src="/static/${flagName}-flag.png"
-                    class="country-flag"
-                    alt="${raceName} flag"
-                    onerror="this.src='/static/country-flag-default.png'; this.onerror=null;"> -->
                 <img src="/static/PNG Tyre.png"
                     class="spinning-tyre"
                     alt="Spinning Tyre">
@@ -213,33 +208,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(data.error);
             }
 
-            // Update loading display with chequered flag at the end
             const plotDiv = document.getElementById('plot');
             plotDiv.innerHTML = `
                 <div class="loading-container-row">
                     <div class="loading-flag">${data.flag_emoji || '🏁'}</div>
-                    <div class="loading-text">Loading ${data.event_name || 'race'} data...</div>
+                    <div class="loading-text">Finalizing ${data.event_name || 'race'} data...</div>
                 </div>  
             `;
 
-            // Give a small delay for the loading message to appear
             setTimeout(() => {
-                // Now create the actual graphs
                 plotDiv.innerHTML = '';
-
                 const graphsContainer = document.createElement('div');
                 graphsContainer.className = 'graphs-container';
-
                 const graphTypeOrder = ['laptimes', 'position', 'tyre', 'quali'];
 
                 graphTypeOrder.forEach(graphType => {
                     const graphDiv = document.createElement('div');
                     graphDiv.className = 'graph-item';
                     graphDiv.id = `graph-${graphType}`;
-
                     const title = document.createElement('h3');
                     title.textContent = getGraphTitle(graphType);
-
                     graphDiv.appendChild(title);
                     graphsContainer.appendChild(graphDiv);
                 });
@@ -268,12 +256,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 document.getElementById('graph-controls').style.display = 'block';
-            }, 100); // Small delay to ensure loading message is visible
+            }, 100);
         })
         .catch(error => {
             showError(error.message);
             console.error('Error:', error);
-            // Keep the loading display but show error
             document.getElementById('plot').innerHTML = `
                 <div class="loading-container">
                     <div class="loading-flag">⚠️</div>
@@ -284,7 +271,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Export functionality
     document.getElementById('export-btn').addEventListener('click', () => {
         const graphItems = document.querySelectorAll('.graph-item');
         if (graphItems.length === 0) return;
@@ -305,7 +291,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Graph type checkbox handling
     document.querySelectorAll('input[name="graph-type"]').forEach(checkbox => {
         checkbox.addEventListener('change', (e) => {
             if (e.target.checked) {
@@ -324,7 +309,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Enlarge on title double-click
     document.getElementById('plot').addEventListener('dblclick', (e) => {
         if (e.target.tagName === 'H3') {
             const graphItem = e.target.parentElement;
@@ -332,7 +316,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (item !== graphItem) item.classList.add('hide');
             });
             graphItem.classList.add('enlarged');
-            // force Plotly to resize to new container dimensions
             Plotly.Plots.resize(graphItem);
         }
     });
@@ -342,22 +325,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const enlargedItems = document.querySelectorAll('.graph-item.enlarged');
             const hiddenItems = document.querySelectorAll('.graph-item.hide');
 
-            // Remove classes first
             enlargedItems.forEach(item => item.classList.remove('enlarged'));
             hiddenItems.forEach(item => item.classList.remove('hide'));
 
-            // Alternative 2: Use setTimeout to allow DOM to update before resizing
             const allGraphItems = document.querySelectorAll('.graph-item');
             setTimeout(() => {
                 allGraphItems.forEach(graph => {
                     Plotly.Plots.resize(graph).then(() => {
-                        Plotly.relayout(graph, {autosize: true});
+                        Plotly.relayout(graph, { autosize: true });
                     });
                 });
-            }, 150); // Small delay to ensure CSS changes are applied THIS IS CRITICAL
+            }, 150);
         }
     });
 
-    // Auto-load on page load
     loadRacesForYear(yearDropdown.value);
 });
