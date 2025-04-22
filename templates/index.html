@@ -53,8 +53,6 @@
                 </div>
 
                 <button id="load-drivers-btn">Refresh Session</button>
-                <div id="driver-loading" style="display: none; color: white;">Loading drivers...</div>
-
 
                 <!-- Action Buttons -->
                 <div class="action-buttons">
@@ -187,12 +185,12 @@
         document.getElementById('load-drivers-btn').addEventListener('click', () => {
             const selectedRace = document.getElementById('race').value;
             const selectedYear = document.getElementById('year').value;
+            const driverContainer = document.getElementById('driver-buttons-container');
             
-            // Clear existing UI elements
-            document.getElementById('driver-loading').style.display = 'block';
-            document.getElementById('driver-buttons-container').innerHTML = '';
-            document.getElementById('plot').innerHTML = ''; // Clear graphs
-            document.getElementById('graph-controls').style.display = 'none'; // Hide graph controls
+            // Clear existing elements and show loading IN ONE PLACE
+            driverContainer.innerHTML = '<div class="loading-text-drivers">Loading drivers...</div>';
+            document.getElementById('plot').innerHTML = '';
+            document.getElementById('graph-controls').style.display = 'none';
             
             // Clear selected drivers
             selectedDrivers.clear();
@@ -207,7 +205,9 @@
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('driver-loading').style.display = 'none';
+                // Clear loading text by resetting container
+                driverContainer.innerHTML = '';
+                
                 if (data.error) {
                     showError(data.error);
                 } else {
@@ -215,7 +215,8 @@
                 }
             })
             .catch(error => {
-                document.getElementById('driver-loading').style.display = 'none';
+                // Clear loading text and show error
+                driverContainer.innerHTML = '';
                 showError('Failed to load drivers: ' + error.message);
             });
         });

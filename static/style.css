@@ -315,3 +315,10 @@ button:hover {
     from { transform: rotate(0deg); }
     to   { transform: rotate(360deg); }
 }
+.loading-text-drivers {
+    color: white;
+    padding: 10px;
+    font-style: italic;
+    text-align: center;
+    width: 100%;
+}
