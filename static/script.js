@@ -99,6 +99,18 @@ document.addEventListener('DOMContentLoaded', () => {
             raceDropdown.innerHTML = '<option value="">Error loading races</option>';
             showError('Failed to load races: ' + error.message);
         });
+
+        document.getElementById('instructional-modal').style.display = 'block';      
+
+        // Close the modal when the close button is clicked
+        document.getElementById('close-modal').onclick = function() {
+            document.getElementById('instructional-modal').style.display = 'none';
+        }
+
+        // Close the modal when the 'Got it!' button is clicked
+        document.getElementById('got-it-btn').onclick = function() {
+            document.getElementById('instructional-modal').style.display = 'none';
+        }
     }
 
     function loadDrivers() {
@@ -308,6 +320,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+    // Show modal on double-click of the heading
+    document.getElementById('site').addEventListener("dblclick", () => {
+        const modal = document.getElementById("instructional-modal");
+        modal.style.display = "block";
+    });
 
     document.getElementById('plot').addEventListener('dblclick', (e) => {
         if (e.target.tagName === 'H3') {
@@ -338,6 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 150);
         }
     });
+    
 
     loadRacesForYear(yearDropdown.value);
 });

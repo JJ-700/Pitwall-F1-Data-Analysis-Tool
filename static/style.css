@@ -21,6 +21,15 @@ p {
     text-align: center;
     font-size: 0.7rem;
 }
+a {
+    color: #e10600;
+    text-decoration: none;
+    font-weight: bold;
+}
+.modal-text {
+    color: white;
+    font-size: 0.9rem;
+}
 
 .header {
     background-color: #1e1e1e;
@@ -63,6 +72,7 @@ p {
 h1 {
     margin: 0;
     font-size: 24px;
+    user-select: none;
 }
 
 .container {
@@ -133,42 +143,53 @@ button:hover {
     height: 100%;
 }
 
-/* Modal styles */
-.modal-overlay {
-    display: none;
+/* Modal Styles */
+.modal {
+    display: none; /* Hidden by default */
     position: fixed;
-    top: 0;
+    z-index: 1; /* Sit on top */
     left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.7);
-    z-index: 1000;
-    justify-content: center;
-    align-items: center;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0, 0, 0, 0.6); /* Dark grey background with opacity */
 }
 
+/* Modal Content */
 .modal-content {
-    background-color: #1e1e1e;
-    padding: 20px;
-    border-radius: 8px;
+    background-color: #333; /* Dark grey background */
+    margin: 15% auto;
+    padding: 30px;
+    border-radius: 15px; /* Rounded corners */
     width: 80%;
-    max-width: 600px;
-    max-height: 80vh;
-    overflow-y: auto;
+    max-width: 500px; /* Adjust as per your design */
+    text-align: center;
 }
 
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+/* Close Button */
+.close {
+    display: none;
 }
 
-.close-modal-btn {
-    background: none;
+/* 'Got it!' Button */
+#got-it-btn {
+    padding: 12px 24px;
+    color: white;
     border: none;
-    font-size: 24px;
     cursor: pointer;
+    border-radius: 8px;
+    font-size: 16px;
+    background-color: #e10600; /* F1 red color */
+    transition: background-color 0.3s;
+}
+
+#got-it-btn:hover {
+    background-color: #b70500; /* Darker F1 red on hover */
+}
+
+/* Optional: Darken the close button */
+.close:hover {
     color: white;
 }
 
@@ -210,6 +231,7 @@ button:hover {
     margin-top: 0;
     margin-bottom: 10px;
     color: #fff;
+    user-select: none;
 }
 
 .graph-type-options {
@@ -255,6 +277,7 @@ button:hover {
   color: white;
   text-align: center;
   margin-top: 10px;
+  user-select: none;
 }
 
 .graph-item .js-plotly-plot {

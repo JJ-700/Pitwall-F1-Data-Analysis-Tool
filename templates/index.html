@@ -11,7 +11,7 @@
 <body>
     <div class="header">
         <div class="header-content">
-            <h1>Pitwall F1</h1>
+            <h1 id="site">Pitwall F1</h1>
             <div class="header-controls">
                 <!-- Session Settings Section -->
                 <div class="session-settings">
@@ -48,7 +48,7 @@
                         </label>
                         <label class="graph-type-option">
                             <input type="checkbox" name="graph-type" value="quali">
-                            Quali
+                            Quali Delta
                         </label>
                     </div>
                 </div>
@@ -73,6 +73,18 @@
         </div>
     </div>
     <p>None of the data available within this software is my own, this project is not affiliated/associated with F1/FOM, this project is aimed at providing a free and useful service within the TOS of FastF1.</p>
-    <p>This is an free, public and Open-Source project distributed under the MIT Lisence, see the full source code <a href="https://github.com/JJ-700">here</a></p>
+    <p>This is an free, public and Open-Source project distributed under the MIT Lisence, see the full source code <a href="https://github.com/JJ-700">here</a> and thankyou for using Pitwall</p>
+    <!-- Instructional Modal -->
+    <div id="instructional-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-modal" class="close">&times;</span>
+            <h2>Welcome to Pitwall F1</h2>
+            <p class="modal-text">This tool helps visualize F1 data. Select the drivers, year and race to begin</p>
+            <p class="modal-text">Double-click graph subtitles to make them fullscreen and enhance their detail</p>
+            <p class="modal-text">Press Escape to minimise graphs and return to the grid panel</p>
+            <p class="modal-text">Double-click the top-left heading if you ever need these tips again</p>
+            <button id="got-it-btn">Got it!</button>
+        </div>
+    </div>
 </body>
 </html>

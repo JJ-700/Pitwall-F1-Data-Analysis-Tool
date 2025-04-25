@@ -307,11 +307,11 @@ def create_quali_figure(session, selected_drivers):
             hoverinfo='text',
             hovertext=(f"Driver: {d}<br>Team: {team}"
                        f"<br>Lap Time: {row['LapTime'].total_seconds():.3f}s"
-                       f"<br>Δ to Fastest: {row['Delta']:.3f}s")
+                       f"<br>Delta to Fastest: {row['Delta']:.3f}s")
         ))
 
     fig.update_layout(
-        title=(f"Qualifying – Δ to Fastest Selected<br>"
+        title=(f"Qualifying – Delta to Fastest Selected<br>"
                f"{qs.event['EventName']} {qs.event.year}"),
         xaxis_title="Delta to Fastest (s)",
         yaxis_title="Driver",
