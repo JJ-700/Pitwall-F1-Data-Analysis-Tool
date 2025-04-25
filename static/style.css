@@ -335,7 +335,7 @@ button:hover {
 
 .spinning-tyre {
     height: 120px;
-    animation: spin 1s linear infinite;
+    animation: spin 0.75s linear infinite;
     object-fit: contain;
 }
 

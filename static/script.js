@@ -268,19 +268,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 document.getElementById('graph-controls').style.display = 'block';
+                // Auto maximize if only one graph is selected
+                if (data.selected_graphs.length === 1) {
+                    const onlyGraphType = data.selected_graphs[0];
+                    const graphDiv = document.getElementById(`graph-${onlyGraphType}`);
+                
+                    document.querySelectorAll('.graph-item').forEach(item => {
+                        if (item !== graphDiv) {
+                            item.classList.add('hide');
+                        }
+                    });
+                
+                    graphDiv.classList.add('enlarged');
+                    Plotly.Plots.resize(graphDiv).then(() => {
+                        Plotly.relayout(graphDiv, { autosize: true });
+                    });
+                }
             }, 100);
         })
         .catch(error => {
-            showError(error.message);
             console.error('Error:', error);
-            document.getElementById('plot').innerHTML = `
-                <div class="loading-container">
-                    <div class="loading-flag">⚠️</div>
-                    <div class="loading-text">Error loading data</div>
-                    <div style="color: #ff6b6b; margin-top: 10px;">${error.message}</div>
-                </div>
+            
+            const message = error.message.includes("No data") || error.message.includes("400")
+              ? "It looks like one of the selected drivers may not have completed any laps in this race (e.g., retired on lap 0). Please try deselecting them and generating the graph again."
+              : error.message;
+            
+            // Optional: If your spinner is in another container, clear that too:
+            const loader = document.querySelector('.loading-container');
+            if (loader) loader.remove();
+
+            // Kill spinner
+            const plotDiv = document.getElementById('plot');
+            plotDiv.innerHTML = `
+              <div class="loading-container" style="border: 3px solidrgb(255, 255, 255); padding: 16px; border-radius: 8px; background-color: #e10600;">
+                  <div class="loading-flag" style="font-size: 2em; text-align: center;">⚠️</div>
+                  <div class="loading-text" style="font-weight: bold; font-size: 1.2em; text-align: center;">Error loading data</div>
+                  <div class="error-details" style="color:rgb(255, 255, 255); margin-top: 10px; text-align: center;">${message}, please ensure the driver completed at least one race lap before retiring</div>
+              </div>
             `;
-        });
+          });
+          
     });
 
     document.getElementById('export-btn').addEventListener('click', () => {
