@@ -1,3 +1,4 @@
+import fastf1.api
 from flask import Flask, render_template, request, jsonify
 import fastf1
 import plotly.graph_objs as go
@@ -112,6 +113,24 @@ def get_graph():
         session.load()
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+    # Access weather data
+    weather_df = session.weather_data
+
+    # Calculate average air and track temperatures
+    avg_air_temp = weather_df['AirTemp'].mean()
+    avg_track_temp = weather_df['TrackTemp'].mean()
+
+    # Determine if there was any rainfall
+    rainfall_occurred = bool(weather_df['Rainfall'].any())
+
+    # Create a weather payload
+    weather_payload = {
+    'air_temp': round(avg_air_temp, 1),
+    'track_temp': round(avg_track_temp, 1),
+    'humidity': round(weather_df['Humidity'].mean(), 1) if 'Humidity' in weather_df else 'N/A',
+    'rainfall': 'Yes' if rainfall_occurred else 'No'
+}
 
     figures = {}
     if 'laptimes' in types:
@@ -130,7 +149,7 @@ def get_graph():
     if not figures:
         return jsonify({"error": "No valid data found"}), 400
 
-    return jsonify({'figures': figures, 'selected_graphs': list(figures.keys())})
+    return jsonify({'figures': figures, 'selected_graphs': list(figures.keys()), 'weather': weather_payload})
 
 def create_lap_time_figure(session, selected_drivers):
     fig = go.Figure()

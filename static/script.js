@@ -121,6 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
         driverContainer.innerHTML = '<div class="loading-text-drivers">Loading drivers...</div>';
         document.getElementById('plot').innerHTML = '';
         document.getElementById('graph-controls').style.display = 'none';
+        document.getElementById('weather-info').style.display = 'none';
         selectedDrivers.clear();
         
         fetch('/get_drivers', {
@@ -148,6 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     raceDropdown.addEventListener('change', () => {
+        document.getElementById('weather-info').style.display = 'none';
         loadDrivers();
     });
 
@@ -227,6 +229,34 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="loading-text">Finalizing ${data.event_name || 'race'} data...</div>
                 </div>  
             `;
+            
+            if (data.weather) {
+                const weatherContainer = document.getElementById('weather-info');
+                weatherContainer.innerHTML = `
+                    <h3>Weather Information</h3>
+                    <div class="weather-grid">
+                        <div class="weather-item">
+                            <span class="weather-label">Air Temp</span>
+                            <span class="weather-value">${data.weather.air_temp}°C</span>
+                        </div>
+                        <div class="weather-item">
+                            <span class="weather-label">Track Temp</span>
+                            <span class="weather-value">${data.weather.track_temp}°C</span>
+                        </div>
+                        <div class="weather-item">
+                            <span class="weather-label">Humidity</span>
+                            <span class="weather-value">${data.weather.humidity}%</span>
+                        </div>
+                        <div class="weather-item">
+                            <span class="weather-label">Rainfall</span>
+                            <span class="weather-value">${data.weather.rainfall}</span>
+                        </div>
+                    </div>
+                `;
+                weatherContainer.style.display = 'block'; // Show only when we have data
+            } else {
+                document.getElementById('weather-info').style.display = 'none'; // Hide if no data
+            }
 
             setTimeout(() => {
                 plotDiv.innerHTML = '';

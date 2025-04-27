@@ -350,3 +350,39 @@ button:hover {
     text-align: center;
     width: 100%;
 }
+.weather-tab {
+    background-color: #1e1e1e;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    border-left: 4px solid #e10600;
+    display: flex;
+    flex-direction: column;
+}
+
+.weather-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 equal columns */
+    gap: 10px;
+    flex-grow: 1;
+}
+
+.weather-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.weather-label {
+    font-weight: bold;
+    color: #aaa;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+}
+
+.weather-value {
+    color: #fff;
+    font-size: 1.1em;
+}
