@@ -122,15 +122,15 @@ def get_graph():
     avg_track_temp = weather_df['TrackTemp'].mean()
 
     # Determine if there was any rainfall
-    rainfall_occurred = bool(weather_df['Rainfall'].any())
+    total_rainfall_mm = weather_df['Rainfall'].sum()
 
     # Create a weather payload
     weather_payload = {
     'air_temp': round(avg_air_temp, 1),
     'track_temp': round(avg_track_temp, 1),
     'humidity': round(weather_df['Humidity'].mean(), 1) if 'Humidity' in weather_df else 'N/A',
-    'rainfall': 'Yes' if rainfall_occurred else 'No'
-}
+    'rainfall': round(float(total_rainfall_mm), 2)
+    }
 
     figures = {}
     if 'laptimes' in types:

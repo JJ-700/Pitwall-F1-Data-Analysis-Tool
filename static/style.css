@@ -351,7 +351,7 @@ button:hover {
     width: 100%;
 }
 .weather-tab {
-    background-color: #1e1e1e;
+    background-color: #181818;
     padding: 15px;
     border-radius: 8px;
     margin-top: 20px;
@@ -365,6 +365,11 @@ button:hover {
     grid-template-columns: repeat(4, 1fr); /* 4 equal columns */
     gap: 10px;
     flex-grow: 1;
+}
+.weather h3 {
+    font-size: 1.17em;
+    color: #fff;
+    user-select: none;
 }
 
 .weather-item {

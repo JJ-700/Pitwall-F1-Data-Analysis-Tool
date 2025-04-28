@@ -249,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <div class="weather-item">
                             <span class="weather-label">Rainfall</span>
-                            <span class="weather-value">${data.weather.rainfall}</span>
+                            <span class="weather-value">${data.weather.rainfall}mm</span>
                         </div>
                     </div>
                 `;
