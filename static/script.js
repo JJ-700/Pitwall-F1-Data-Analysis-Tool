@@ -65,6 +65,7 @@ function getGraphTitle(graphType) {
 document.addEventListener('DOMContentLoaded', () => {
     const yearDropdown = document.getElementById('year');
     const raceDropdown = document.getElementById('race');
+    document.getElementById('instructional-modal').style.display = 'block';      
 
     function loadRacesForYear(year) {
         raceDropdown.innerHTML = '<option value="">Loading races...</option>';
@@ -99,13 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
             raceDropdown.innerHTML = '<option value="">Error loading races</option>';
             showError('Failed to load races: ' + error.message);
         });
-
-        document.getElementById('instructional-modal').style.display = 'block';      
-
-        // Close the modal when the close button is clicked
-        document.getElementById('close-modal').onclick = function() {
-            document.getElementById('instructional-modal').style.display = 'none';
-        }
 
         // Close the modal when the 'Got it!' button is clicked
         document.getElementById('got-it-btn').onclick = function() {

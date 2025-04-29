@@ -16,7 +16,6 @@ body {
     margin: 0;
     padding: 0;
 }
-
 p {
     text-align: center;
     font-size: 0.7rem;
@@ -30,13 +29,11 @@ a {
     color: white;
     font-size: 0.9rem;
 }
-
 .header {
     background-color: #1e1e1e;
     padding: 15px 0;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
-
 .header-content {
     max-width: 100%;
     margin: 0 auto;
@@ -59,28 +56,23 @@ a {
     align-items: center;
     gap: 10px;
 }
-
 .session-settings select {
     width: auto; /* avoid full width */
 }
-
 .header-buttons {
   display: flex;
   gap: 10px;
 }
-
 h1 {
     margin: 0;
     font-size: 24px;
     user-select: none;
 }
-
 .container {
     max-width: 100%;
     margin: 20px auto;
     padding: 0 20px;
 }
-
 .driver-info {
     display: flex;
     flex-wrap: wrap;
@@ -88,7 +80,6 @@ h1 {
     margin-bottom: 20px;
     justify-content: center;
 }
-
 .driver-btn {
     padding: 8px 15px;
     border: none;
@@ -97,12 +88,10 @@ h1 {
     font-weight: bold;
     transition: all 0.3s;
 }
-
 .driver-btn.active {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
-
 button {
     background-color: #e10600;
     color: white;
@@ -113,26 +102,21 @@ button {
     font-weight: bold;
     transition: background-color 0.3s;
 }
-
 button:hover {
     background-color: #b70500;
 }
-
 .control-btn {
     background-color: #333;
     margin-right: 10px;
 }
-
 .control-btn:hover {
     background-color: #555;
 }
-
 .error {
     color: #ff6b6b;
     margin: 10px 0;
     display: none;
 }
-
 .graph-container {
     background-color: #1e1e1e;
     border-radius: 8px;
@@ -142,7 +126,6 @@ button:hover {
     flex: 1 1 500px;
     height: 100%;
 }
-
 /* Modal Styles */
 .modal {
     display: none; /* Hidden by default */
@@ -155,7 +138,6 @@ button:hover {
     overflow: auto; /* Enable scroll if needed */
     background-color: rgba(0, 0, 0, 0.6); /* Dark grey background with opacity */
 }
-
 /* Modal Content */
 .modal-content {
     background-color: #333; /* Dark grey background */
@@ -166,12 +148,10 @@ button:hover {
     max-width: 500px; /* Adjust as per your design */
     text-align: center;
 }
-
 /* Close Button */
 .close {
     display: none;
 }
-
 /* 'Got it!' Button */
 #got-it-btn {
     padding: 12px 24px;
@@ -183,16 +163,9 @@ button:hover {
     background-color: #e10600; /* F1 red color */
     transition: background-color 0.3s;
 }
-
 #got-it-btn:hover {
     background-color: #b70500; /* Darker F1 red on hover */
 }
-
-/* Optional: Darken the close button */
-.close:hover {
-    color: white;
-}
-
 .dropdowns-inline {
     display: flex;
     gap: 15px;
@@ -200,17 +173,14 @@ button:hover {
     margin-bottom: 20px;
     flex-wrap: wrap;
 }
-
 .dropdown-container {
     display: flex;
     flex-direction: column;
 }
-
 .dropdown-container label {
     margin-bottom: 5px;
     font-weight: bold;
 }
-
 .dropdown-container select {
     padding: 8px;
     border-radius: 4px;
@@ -218,7 +188,6 @@ button:hover {
     background-color: #333;
     color: white;
 }
-
 /* Graph types styling */
 .graph-types-container {
     margin-top: 20px;
@@ -226,32 +195,27 @@ button:hover {
     background: rgba(0, 0, 0, 0.2);
     border-radius: 8px;
 }
-
 .graph-types-container h3 {
     margin-top: 0;
     margin-bottom: 10px;
     color: #fff;
     user-select: none;
 }
-
 .graph-type-options {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
 }
-
 .graph-type-option {
     display: flex;
     align-items: center;
     color: #fff;
     cursor: pointer;
 }
-
 .graph-type-option input {
     margin-right: 8px;
     cursor: pointer;
 }
-
 /* Multiple graphs layout - 2x2 grid */
 .graphs-container {
   display: grid;
@@ -260,7 +224,6 @@ button:hover {
   gap: 20px;
   width: 100%;
 }
-
 .graph-item {
   background: rgba(0, 0, 0, 0.2);
   padding: 15px;
@@ -271,7 +234,6 @@ button:hover {
   flex-direction: column;
   align-items: center;
 }
-
 .graph-item h3 {
   margin: 0 0 10px 0;
   color: white;
@@ -279,28 +241,10 @@ button:hover {
   margin-top: 10px;
   user-select: none;
 }
-
 .graph-item .js-plotly-plot {
   width: 100%;
   height: 100%;
   flex-grow: 1;
-}
-
-.graph-item .js-plotly-plot {
-    width: 100%;
-}
-
-.open-modal-btn {
-    background-color: #333;
-}
-
-.open-modal-btn:hover {
-    background-color: #555;
-}
-.graphs-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
 }
 .graph-item {
     transition: all 0.3s ease;
@@ -327,18 +271,15 @@ button:hover {
     height: 100vh;
     gap: 30px;
 }
-
 .country-flag {
     height: 120px;
     object-fit: contain;
 }
-
 .spinning-tyre {
     height: 120px;
     animation: spin 0.75s linear infinite;
     object-fit: contain;
 }
-
 @keyframes spin {
     from { transform: rotate(0deg); }
     to   { transform: rotate(360deg); }
@@ -359,7 +300,6 @@ button:hover {
     display: flex;
     flex-direction: column;
 }
-
 .weather-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr); /* 4 equal columns */
@@ -371,7 +311,6 @@ button:hover {
     color: #fff;
     user-select: none;
 }
-
 .weather-item {
     display: flex;
     flex-direction: column;
@@ -379,14 +318,12 @@ button:hover {
     align-items: center;
     text-align: center;
 }
-
 .weather-label {
     font-weight: bold;
     color: #aaa;
     margin-bottom: 5px;
     font-size: 0.9em;
 }
-
 .weather-value {
     color: #fff;
     font-size: 1.1em;

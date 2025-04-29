@@ -3,24 +3,17 @@ BEGIN GET_DRIVERS
     GET Selected_Year
 
     TRY
-        Session = GET FastF1.Session(Selected_Year, Selected_Race)
-        Drivers_In_Session = Session.laps['Driver'].unique().tolist()
+        Session = GET FastF1.Get_Session(Selected_Year, Selected_Race)
+        Session.load()
+        Drivers = Session.laps['Driver'].unique().tolist()
 
-        Session_Driver_Colours = {}
+        Colours = {}
 
-        FOR Driver IN Drivers_In_Session
-            TRY
-                Driver_Info = Session.get_driver(Driver)
-                Team_Name = Driver_Info['TeamName']
-                IF Team_Name = "Racing Bulls" THEN
-                    Team_Colour = "#1634cb"
-                ELSE
-                    Team_Colour = FastF1.plotting.Team_Colour(Team_Name)
-                ENDIF
-                Session_Driver_Colours[Driver] = Team_Colour
-            EXCEPT
-                DISPLAY "Error getting color for" + Driver
-                Session_Driver_Colours[Driver] = "#000000" // Default to white
+        FOR Driver IN Drivers
+            Info = Session.get_driver(Driver)
+            Team = Normalise_Team_Name(Driver_Info['TeamName'])
+            Colours[Driver] = Get_Driver_Colour[Team]
+            RETURN GET_DRIVERS (Driver, Colours)
         NEXT Driver
         ENDFOR
 
