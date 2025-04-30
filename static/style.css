@@ -332,5 +332,5 @@ button:hover {
     height: 6px;
     width: 0%;
     background-color: #e10600;
-    transition: width 0.3s ease-in-out;
+    transition: width 1.1s ease-in-out;
 }

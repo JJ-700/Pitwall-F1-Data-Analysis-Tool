@@ -68,9 +68,14 @@ function showProgressBar() {
     bar.style.width = '5%'; // start it small
 }
 
-function updateProgressBar(percent) {
+function updateProgressBar(percent, message = "") {
+    const container = document.getElementById('progress-bar-container');
     const bar = document.getElementById('progress-bar');
-    bar.style.width = percent + '%';
+    const msg = document.getElementById('progress-message');
+
+    container.style.display = 'block';           // Ensure it's visible
+    bar.style.width = percent + '%';            // Update width
+    msg.textContent = message;                  // Update message
 }
 
 function completeProgressBar() {
@@ -186,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         showProgressBar();              // 🔴 Start progress bar
-        updateProgressBar(10);          // 🔴 Initial progress
+        updateProgressBar(10, "Checking user input...");          // 🔴 Initial progress
 
         const raceToCountry = {
             'Bahrain Grand Prix': 'bahrain',
@@ -223,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     alt="Spinning Tyre">
             </div>
         `;
-        updateProgressBar(25);          // 🔴 After loading spinner appears
+        updateProgressBar(15,"Preparing backend request...");          // 🔴 After loading spinner appears
         fetch('/get_graph', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -236,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         
         .then(response => {
-            updateProgressBar(50);      // 🔴 Server responded
+            updateProgressBar(50,"Checking response...");      // 🔴 Server responded
             if (!response.ok) {
                 return response.json().then(err => { throw new Error(err.error) });
             }
@@ -246,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.error) {
                 throw new Error(data.error);
             }
-            updateProgressBar(70);      // 🔴 Just before processing
+            updateProgressBar(70,"Processing graphs...");      // 🔴 Just before processing
             const plotDiv = document.getElementById('plot');
             plotDiv.innerHTML = `
                 <div class="loading-container-row">
