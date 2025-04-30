@@ -1,22 +1,17 @@
-BEGIN GET_DRIVERS
-    GET Selected_Race
-    GET Selected_Year
-
-    TRY
-        Session = GET FastF1.Get_Session(Selected_Year, Selected_Race)
-        Session.load()
-        Drivers = Session.laps['Driver'].unique().tolist()
-
-        Colours = {}
-
-        FOR Driver IN Drivers
-            Info = Session.get_driver(Driver)
-            Team = Normalise_Team_Name(Driver_Info['TeamName'])
-            Colours[Driver] = Get_Driver_Colour[Team]
-            RETURN GET_DRIVERS (Driver, Colours)
-        NEXT Driver
-        ENDFOR
-
-    EXCEPT
-        DISPLAY "Error getting session data"
-END
+// the function get_session_data returns a session object with the data for the given year and race
+// the function normalize_team_name normalizes the team name to a standard format
+// the function .unique() returns the unique values in a series
+// the function .tolist() converts a series to a list
+// the function get_driver_colour returns the color associated with a team name
+BEGIN get_drivers (Desired_Year, Desired_Race)
+    Session = get_session_data(Desired_Year, Desired_Race, 'R')
+    Drivers = Session.laps['Driver'].unique().tolist()
+    colours = {}
+    FOR i = 0 TO Drivers.length - 1 STEP 1
+        info = Session.get_drivers(i)
+        team = normalize_team_name(info['TeamName'])
+        colours[i] = get_driver_colour(team)
+    NEXT i
+    ENDFOR
+    RETURN colours , Drivers
+END get_drivers

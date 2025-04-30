@@ -68,7 +68,7 @@ def index():
 @app.route("/get_drivers", methods=["POST"])
 def get_drivers():
     data = request.get_json()
-    race = data.get('race', 'japan')
+    race = data.get('race', 'australia')
     year = int(data.get('year', 2025))
     try:
         session = fastf1.get_session(year, race, 'R')

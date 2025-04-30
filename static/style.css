@@ -328,3 +328,9 @@ button:hover {
     color: #fff;
     font-size: 1.1em;
 }
+#progress-bar {
+    height: 6px;
+    width: 0%;
+    background-color: #e10600;
+    transition: width 0.3s ease-in-out;
+}

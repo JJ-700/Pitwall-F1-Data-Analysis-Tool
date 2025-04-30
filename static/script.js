@@ -61,6 +61,33 @@ function getGraphTitle(graphType) {
     return titles[graphType] || graphType;
 }
 
+function showProgressBar() {
+    const container = document.getElementById('progress-bar-container');
+    const bar = document.getElementById('progress-bar');
+    container.style.display = 'block';
+    bar.style.width = '5%'; // start it small
+}
+
+function updateProgressBar(percent) {
+    const bar = document.getElementById('progress-bar');
+    bar.style.width = percent + '%';
+}
+
+function completeProgressBar() {
+    updateProgressBar(100);
+    setTimeout(() => {
+        document.getElementById('progress-bar-container').style.display = 'none';
+        document.getElementById('progress-bar').style.width = '0%';
+    }, 800); // allow it to reach 100% visibly
+}
+
+function resetProgressBar() {
+    const bar = document.getElementById('progress-bar');
+    bar.style.width = '0%';
+    document.getElementById('progress-bar-container').style.display = 'none';
+}
+
+
 // Initialize on load
 document.addEventListener('DOMContentLoaded', () => {
     const yearDropdown = document.getElementById('year');
@@ -158,6 +185,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        showProgressBar();              // 🔴 Start progress bar
+        updateProgressBar(10);          // 🔴 Initial progress
+
         const raceToCountry = {
             'Bahrain Grand Prix': 'bahrain',
             'Saudi Arabian Grand Prix': 'saudi-arabia',
@@ -186,7 +216,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const flagName = raceToCountry[raceName] || 'country-flag-default';
-
         document.getElementById('plot').innerHTML = `
             <div class="loading-container-row">
                 <img src="/static/PNG Tyre.png"
@@ -194,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     alt="Spinning Tyre">
             </div>
         `;
-
+        updateProgressBar(25);          // 🔴 After loading spinner appears
         fetch('/get_graph', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -205,7 +234,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 graph_types: Array.from(selectedGraphTypes)
             })
         })
+        
         .then(response => {
+            updateProgressBar(50);      // 🔴 Server responded
             if (!response.ok) {
                 return response.json().then(err => { throw new Error(err.error) });
             }
@@ -215,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.error) {
                 throw new Error(data.error);
             }
-
+            updateProgressBar(70);      // 🔴 Just before processing
             const plotDiv = document.getElementById('plot');
             plotDiv.innerHTML = `
                 <div class="loading-container-row">
@@ -308,9 +339,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         Plotly.relayout(graphDiv, { autosize: true });
                     });
                 }
+
+                completeProgressBar(); // ✅ Finish progress bar
             }, 100);
         })
         .catch(error => {
+            resetProgressBar(); // ✅ Reset if error
             console.error('Error:', error);
             
             const message = error.message.includes("No data") || error.message.includes("400")
