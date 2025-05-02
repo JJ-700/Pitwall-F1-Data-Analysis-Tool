@@ -334,3 +334,51 @@ button:hover {
     background-color: #e10600;
     transition: width 1.1s ease-in-out;
 }
+.info-tab {
+    background-color: #1a1a1a;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    align-items: center;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.info-label {
+    font-weight: bold;
+    color: #e10600;
+    margin-bottom: 0.2rem;
+}
+
+.info-value {
+    color: #ffffff;
+}
+
+.track-visual {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.track-flag {
+    width: 80px;
+    height: 50px;
+    object-fit: cover;
+    border: 1px solid #333;
+}
+
+.track-layout {
+    width: 200px;
+    height: 100px;
+    object-fit: contain;
+}

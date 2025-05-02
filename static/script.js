@@ -171,11 +171,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     yearDropdown.addEventListener('change', () => {
+        document.getElementById('plot').innerHTML = '';
+        document.getElementById('weather-info').style.display = 'none';
+        document.getElementById('circuit-info').style.display = 'none';
         loadRacesForYear(yearDropdown.value);
     });
 
     raceDropdown.addEventListener('change', () => {
+        document.getElementById('plot').innerHTML = '';
         document.getElementById('weather-info').style.display = 'none';
+        document.getElementById('circuit-info').style.display = 'none';
         loadDrivers();
     });
 
@@ -287,6 +292,53 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 document.getElementById('weather-info').style.display = 'none'; // Hide if no data
             }
+
+            if (data.circuit_info) {
+                const circuitContainer = document.getElementById('circuit-info');
+                const raceName = document.getElementById('race').options[document.getElementById('race').selectedIndex].text;
+                const flagName = raceToCountry[raceName] || 'default';
+                
+                circuitContainer.innerHTML = `
+                    <h3>Circuit Information</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Official Name</span>
+                            <span class="info-value">${data.circuit_info.official_name}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Location</span>
+                            <span class="info-value">${data.circuit_info.location}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Length</span>
+                            <span class="info-value">${data.circuit_info.length_km} km</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Turns</span>
+                            <span class="info-value">${data.circuit_info.turns}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Lap Record</span>
+                            <span class="info-value">${data.circuit_info.lap_record}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Circuit Type</span>
+                            <span class="info-value">${data.circuit_info.circuit_type}</span>
+                        </div>
+                    </div>
+                    <div class="track-visual">
+                        <img src="/static/${flagName}-flag.png" class="track-flag" alt="Country Flag">
+                        <img src="/static/${raceName}.png" class="track-layout" alt="Track Layout">
+                    </div>
+                `;
+                circuitContainer.style.display = 'block';
+            } else {
+                document.getElementById('circuit-info').style.display = 'none';
+            }
+
+
+                //OI WHY DOES THE WEATHER / TRACK MODULES NOT GO AWAY WHEN THE DROPDOWNS ARE CHANGED???? FIX IT BUDDY
+
 
             setTimeout(() => {
                 plotDiv.innerHTML = '';
