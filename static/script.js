@@ -300,35 +300,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 circuitContainer.innerHTML = `
                     <h3>Circuit Information</h3>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="info-label">Official Name</span>
-                            <span class="info-value">${data.circuit_info.official_name}</span>
+                    <div class="weather-grid">
+                        <div class="weather-item">
+                            <span class="weather-label">Location</span>
+                            <span class="weather-value">${data.circuit_info.location}</span>
                         </div>
-                        <div class="info-item">
-                            <span class="info-label">Location</span>
-                            <span class="info-value">${data.circuit_info.location}</span>
+                        <div class="weather-item">
+                            <span class="weather-label">Length</span>
+                            <span class="weather-value">${data.circuit_info.length_km} km</span>
                         </div>
-                        <div class="info-item">
-                            <span class="info-label">Length</span>
-                            <span class="info-value">${data.circuit_info.length_km} km</span>
+                        <div class="weather-item">
+                            <span class="weather-label">Turns</span>
+                            <span class="weather-value">${data.circuit_info.turns}</span>
                         </div>
-                        <div class="info-item">
-                            <span class="info-label">Turns</span>
-                            <span class="info-value">${data.circuit_info.turns}</span>
+                        <div class="weather-item">
+                            <span class="weather-label">Lap Record</span>
+                            <span class="weather-value">${data.circuit_info.lap_record}</span>
                         </div>
-                        <div class="info-item">
-                            <span class="info-label">Lap Record</span>
-                            <span class="info-value">${data.circuit_info.lap_record}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Circuit Type</span>
-                            <span class="info-value">${data.circuit_info.circuit_type}</span>
-                        </div>
-                    </div>
-                    <div class="track-visual">
-                        <img src="/static/${flagName}-flag.png" class="track-flag" alt="Country Flag">
-                        <img src="/static/${raceName}.png" class="track-layout" alt="Track Layout">
                     </div>
                 `;
                 circuitContainer.style.display = 'block';
