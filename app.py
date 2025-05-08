@@ -6,6 +6,7 @@ import pandas as pd
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
+plotly_template = 'plotly_dark'  # Default template
 
 import fastf1.plotting
 fastf1.plotting.setup_mpl(
@@ -14,271 +15,153 @@ fastf1.plotting.setup_mpl(
     misc_mpl_mods=False
 )
 
+# Caching location is autoselected based on the OS and is autoscanned by FastF1 when retreiving data.
+
 # Hardcoded dataset for static information, for faster loading
 CIRCUIT_DATABASE = {
     "bahraingrandprix": {
-        "official_name": "Bahrain International Circuit",
         "location": "Sakhir, Bahrain",
-        "latitude": 26.0325,
-        "longitude": 50.5106,
         "length_km": 5.412,
         "turns": 15,
-        "lap_record": "1:31.447 (Pedro de la Rosa, 2005)",
-        "circuit_type": "race",
-        "drs_zones": 3
+        "lap_record": "1:31.447 (Pedro de la Rosa, 2005)"
     },
     "saudiarabiangrandprix": {
-        "official_name": "Jeddah Corniche Circuit",
         "location": "Jeddah, Saudi Arabia",
-        "latitude": 21.6319,
-        "longitude": 39.1044,
         "length_km": 6.174,
         "turns": 27,
-        "lap_record": "1:28.049 (Lewis Hamilton, 2021)",
-        "circuit_type": "street",
-        "drs_zones": 3
+        "lap_record": "1:28.049 (Lewis Hamilton, 2021)"
     },
     "australiangrandprix": {
-        "official_name": "Albert Park Circuit",
         "location": "Melbourne, Australia",
-        "latitude": -37.8497,
-        "longitude": 144.968,
         "length_km": 5.278,
         "turns": 14,
-        "lap_record": "1:20.260 (Charles Leclerc, 2022)",
-        "circuit_type": "street",
-        "drs_zones": 4
+        "lap_record": "1:20.260 (Charles Leclerc, 2022)"
     },
     "japanesegrandprix": {
-        "official_name": "Suzuka International Racing Course",
         "location": "Suzuka, Japan",
-        "latitude": 34.8431,
-        "longitude": 136.541,
         "length_km": 5.807,
         "turns": 18,
-        "lap_record": "1:30.983 (Lewis Hamilton, 2019)",
-        "circuit_type": "race",
-        "drs_zones": 2
+        "lap_record": "1:30.983 (Lewis Hamilton, 2019)"
     },
     "chinesegrandprix": {
-        "official_name": "Shanghai International Circuit",
         "location": "Shanghai, China",
-        "latitude": 31.3389,
-        "longitude": 121.220,
         "length_km": 5.451,
         "turns": 16,
-        "lap_record": "1:32.238 (Michael Schumacher, 2004)",
-        "circuit_type": "race",
-        "drs_zones": 2
+        "lap_record": "1:32.238 (Michael Schumacher, 2004)"
     },
     "miamigrandprix": {
-        "official_name": "Miami International Autodrome",
         "location": "Miami, USA",
-        "latitude": 25.9581,
-        "longitude": -80.2389,
         "length_km": 5.412,
         "turns": 19,
-        "lap_record": "1:29.708 (Max Verstappen, 2023)",
-        "circuit_type": "street",
-        "drs_zones": 3
+        "lap_record": "1:29.708 (Max Verstappen, 2023)"
     },
     "emiliaromagnagrandprix": {
-        "official_name": "Autodromo Enzo e Dino Ferrari",
         "location": "Imola, Italy",
-        "latitude": 44.3439,
-        "longitude": 11.7167,
         "length_km": 4.909,
         "turns": 19,
-        "lap_record": "1:15.484 (Lewis Hamilton, 2020)",
-        "circuit_type": "race",
-        "drs_zones": 1
+        "lap_record": "1:15.484 (Lewis Hamilton, 2020)"
     },
     "monacograndprix": {
-        "official_name": "Circuit de Monaco",
         "location": "Monte Carlo, Monaco",
-        "latitude": 43.7347,
-        "longitude": 7.42056,
         "length_km": 3.337,
         "turns": 19,
-        "lap_record": "1:12.909 (Lewis Hamilton, 2021)",
-        "circuit_type": "street",
-        "drs_zones": 1
+        "lap_record": "1:12.909 (Lewis Hamilton, 2021)"
     },
     "canadiangrandprix": {
-        "official_name": "Circuit Gilles Villeneuve",
         "location": "Montreal, Canada",
-        "latitude": 45.5000,
-        "longitude": -73.5228,
         "length_km": 4.361,
         "turns": 14,
-        "lap_record": "1:13.078 (Valtteri Bottas, 2019)",
-        "circuit_type": "street",
-        "drs_zones": 2
+        "lap_record": "1:13.078 (Valtteri Bottas, 2019)"
     },
     "spanishgrandprix": {
-        "official_name": "Circuit de Barcelona-Catalunya",
         "location": "Montmeló, Spain",
-        "latitude": 41.5700,
-        "longitude": 2.26111,
         "length_km": 4.675,
         "turns": 16,
-        "lap_record": "1:16.330 (Max Verstappen, 2023)",
-        "circuit_type": "race",
-        "drs_zones": 2
+        "lap_record": "1:16.330 (Max Verstappen, 2023)"
     },
     "austriangrandprix": {
-        "official_name": "Red Bull Ring",
         "location": "Spielberg, Austria",
-        "latitude": 47.2197,
-        "longitude": 14.7647,
         "length_km": 4.318,
         "turns": 10,
-        "lap_record": "1:05.619 (Carlos Sainz, 2020)",
-        "circuit_type": "race",
-        "drs_zones": 3
+        "lap_record": "1:05.619 (Carlos Sainz, 2020)"
     },
     "britishgrandprix": {
-        "official_name": "Silverstone Circuit",
         "location": "Silverstone, UK",
-        "latitude": 52.0786,
-        "longitude": -1.01694,
         "length_km": 5.891,
         "turns": 18,
-        "lap_record": "1:27.097 (Max Verstappen, 2020)",
-        "circuit_type": "race",
-        "drs_zones": 3
+        "lap_record": "1:27.097 (Max Verstappen, 2020)"
     },
     "hungariangrandprix": {
-        "official_name": "Hungaroring",
         "location": "Mogyoród, Hungary",
-        "latitude": 47.5806,
-        "longitude": 19.2486,
         "length_km": 4.381,
         "turns": 14,
-        "lap_record": "1:16.627 (Lewis Hamilton, 2020)",
-        "circuit_type": "race",
-        "drs_zones": 2
+        "lap_record": "1:16.627 (Lewis Hamilton, 2020)"
     },
     "belgiangrandprix": {
-        "official_name": "Circuit de Spa-Francorchamps",
         "location": "Stavelot, Belgium",
-        "latitude": 50.4372,
-        "longitude": 5.97139,
         "length_km": 7.004,
         "turns": 19,
-        "lap_record": "1:46.286 (Valtteri Bottas, 2018)",
-        "circuit_type": "race",
-        "drs_zones": 2
+        "lap_record": "1:46.286 (Valtteri Bottas, 2018)"
     },
     "dutchgrandprix": {
-        "official_name": "Circuit Zandvoort",
         "location": "Zandvoort, Netherlands",
-        "latitude": 52.3886,
-        "longitude": 4.54083,
         "length_km": 4.259,
         "turns": 14,
-        "lap_record": "1:11.097 (Lewis Hamilton, 2021)",
-        "circuit_type": "race",
-        "drs_zones": 2
+        "lap_record": "1:11.097 (Lewis Hamilton, 2021)"
     },
     "italiangrandprix": {
-        "official_name": "Autodromo Nazionale Monza",
         "location": "Monza, Italy",
-        "latitude": 45.6156,
-        "longitude": 9.28111,
         "length_km": 5.793,
         "turns": 11,
-        "lap_record": "1:21.046 (Rubens Barrichello, 2004)",
-        "circuit_type": "race",
-        "drs_zones": 2
+        "lap_record": "1:21.046 (Rubens Barrichello, 2004)"
     },
     "azerbaijangrandprix": {
-        "official_name": "Baku City Circuit",
         "location": "Baku, Azerbaijan",
-        "latitude": 40.3725,
-        "longitude": 49.8533,
         "length_km": 6.003,
         "turns": 20,
-        "lap_record": "1:43.009 (Charles Leclerc, 2019)",
-        "circuit_type": "street",
-        "drs_zones": 3
+        "lap_record": "1:43.009 (Charles Leclerc, 2019)"
     },
     "singaporegrandprix": {
-        "official_name": "Marina Bay Street Circuit",
         "location": "Singapore",
-        "latitude": 1.2914,
-        "longitude": 103.864,
         "length_km": 5.063,
         "turns": 23,
-        "lap_record": "1:35.867 (Lewis Hamilton, 2023)",
-        "circuit_type": "street",
-        "drs_zones": 3
+        "lap_record": "1:35.867 (Lewis Hamilton, 2023)"
     },
     "unitedstatesgrandprix": {
-        "official_name": "Circuit of the Americas",
         "location": "Austin, USA",
-        "latitude": 30.1328,
-        "longitude": -97.6411,
         "length_km": 5.513,
         "turns": 20,
-        "lap_record": "1:36.169 (Charles Leclerc, 2019)",
-        "circuit_type": "race",
-        "drs_zones": 3
+        "lap_record": "1:36.169 (Charles Leclerc, 2019)"
     },
     "mexicocitygrandprix": {
-        "official_name": "Autódromo Hermanos Rodríguez",
         "location": "Mexico City, Mexico",
-        "latitude": 19.4042,
-        "longitude": -99.0907,
         "length_km": 4.304,
         "turns": 17,
-        "lap_record": "1:17.774 (Valtteri Bottas, 2021)",
-        "circuit_type": "race",
-        "drs_zones": 2
+        "lap_record": "1:17.774 (Valtteri Bottas, 2021)"
     },
     "sãopaulograndprix": {
-        "official_name": "Autódromo José Carlos Pace",
         "location": "São Paulo, Brazil",
-        "latitude": -23.7036,
-        "longitude": -46.6997,
         "length_km": 4.309,
         "turns": 15,
-        "lap_record": "1:10.540 (Lewis Hamilton, 2018)",
-        "circuit_type": "race",
-        "drs_zones": 2
+        "lap_record": "1:10.540 (Lewis Hamilton, 2018)"
     },
     "lasvegasgrandprix": {
-        "official_name": "Las Vegas Strip Circuit",
         "location": "Las Vegas, USA",
-        "latitude": 36.1147,
-        "longitude": -115.172,
         "length_km": 6.120,
         "turns": 17,
-        "lap_record": "1:35.490 (Oscar Piastri, 2023)",
-        "circuit_type": "street",
-        "drs_zones": 3
+        "lap_record": "1:35.490 (Oscar Piastri, 2023)"
     },
     "qatargrandprix": {
-        "official_name": "Lusail International Circuit",
         "location": "Lusail, Qatar",
-        "latitude": 25.4900,
-        "longitude": 51.4542,
         "length_km": 5.380,
         "turns": 16,
-        "lap_record": "1:23.196 (Max Verstappen, 2023)",
-        "circuit_type": "race",
-        "drs_zones": 2
+        "lap_record": "1:23.196 (Max Verstappen, 2023)"
     },
     "abudhabigrandprix": {
-        "official_name": "Yas Marina Circuit",
         "location": "Abu Dhabi, UAE",
-        "latitude": 24.4672,
-        "longitude": 54.6031,
         "length_km": 5.281,
         "turns": 16,
-        "lap_record": "1:26.103 (Max Verstappen, 2021)",
-        "circuit_type": "race",
-        "drs_zones": 3
+        "lap_record": "1:26.103 (Max Verstappen, 2021)"
     }
 }
 
@@ -302,11 +185,13 @@ def normalize_team_name(name):
     return "RB" if name == "Racing Bulls" else name
 
 def get_driver_color(team_name):
-    """Get a safe team colour, defaulting to white on error."""
+    """Get a safe team colour, defaulting to white on error, with special case for HAAS."""
     try:
+        if team_name == 'haas':
+            return '#d3d3d3'  # Light grey for HAAS
         return fastf1.plotting.team_color(team_name)
     except:
-        return '#ffffff'
+        return '#ffffff'  # Default to white on error
 
 def build_team_styles(teammates, selected_drivers):
     """
@@ -332,6 +217,25 @@ def build_team_styles(teammates, selected_drivers):
 @app.route("/")
 def index():
     return render_template("index.html")
+
+@app.route('/api/set-theme', methods=['POST'])
+def set_theme():
+    global plotly_template
+
+    data = request.get_json()
+    theme = data.get('theme', 'dark')
+
+    if theme == 'dark':
+        plotly_template = 'plotly_dark'
+    elif theme == 'light':
+        plotly_template = 'plotly_white'
+    else:
+        plotly_template = 'plotly_dark'
+    
+    print(f"Plotly template set to: {plotly_template}")  # For debugging/logging
+
+    return jsonify({'success': True, 'template': plotly_template})
+
 
 @app.route("/get_drivers", methods=["POST"])
 def get_drivers():
@@ -475,7 +379,7 @@ def create_lap_time_figure(session, selected_drivers):
         title=f"Lap Times – {session.event['EventName']} {session.event.year}",
         xaxis_title="Lap Number",
         yaxis_title="Lap Time (s)",
-        template="plotly_dark",
+        template=plotly_template,
         hovermode="closest"
     )
     return fig
@@ -519,7 +423,7 @@ def create_position_figure(session, selected_drivers):
         title=f"Race Position – {session.event['EventName']} {session.event.year}",
         xaxis_title="Lap Number",
         yaxis_title="Position",
-        template="plotly_dark",
+        template=plotly_template,
         hovermode="closest",
         yaxis=dict(autorange="reversed")
     )
@@ -566,7 +470,7 @@ def create_tyre_figure(session, selected_drivers):
         title=f"Tyre Strategy – {session.event['EventName']} {session.event.year}",
         xaxis_title="Lap Number",
         yaxis_title="Driver",
-        template="plotly_dark",
+        template=plotly_template,
         showlegend=False
     )
     return fig
@@ -617,7 +521,7 @@ def create_quali_figure(session, selected_drivers):
         xaxis_title="Delta to Fastest (s)",
         yaxis_title="Driver",
         yaxis=dict(categoryorder='total ascending'),
-        template="plotly_dark",
+        template=plotly_template,
         showlegend=False,
         margin=dict(l=100, r=40, t=80, b=40),
         height=400

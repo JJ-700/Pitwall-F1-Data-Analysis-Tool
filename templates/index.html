@@ -15,6 +15,7 @@
             <div class="header-controls">
                 <!-- Session Settings Section -->
                 <div class="session-settings">
+                    <button id="theme-toggle" class="control-btn">Toggle Theme</button>
                     <div class="dropdown-container">
                         <label for="year">Year</label>
                         <select id="year" name="year">
@@ -74,8 +75,10 @@
                 <div id="progress-message" style="margin-top: 5px; font-size: 0.9em; color: #ffffff;"></div>
             </div>
             <div id="plot"></div>
-            <div id="weather-info" class="weather-tab" style="display: none; margin-top:1rem; color: #ccc; font-size: 0.9rem;"></div>
-            <div id="circuit-info" class="weather-tab" style="display: none; margin-top:1rem; color: #ccc; font-size: 0.9rem;"></div>
+            <div id="lower-container">
+                <div id="weather-info" class="weather-tab" style="display: none; margin-top:1rem; color: #ccc; font-size: 0.9rem;"></div>
+                <div id="circuit-info" class="weather-tab" style="display: none; margin-top:1rem; color: #ccc; font-size: 0.9rem;"></div>
+            </div>
         </div>
     </div>
     <p>None of the data available within this software is my own, this project is not affiliated/associated with F1/FOM, this project is aimed at providing a free and useful service within the TOS of FastF1.</p>
@@ -94,3 +97,4 @@
     </div>
 </body>
 </html>
+    <!-- fix fonts -->

@@ -1,0 +1,23 @@
+// get_graph returns the relevant graphs with the selected drivers and session
+// get_drivers returns the relevant drivers with the selected session
+BEGIN MAINLINE
+    GET webpage
+    GET stylesheet
+    GET script
+    GET get_races
+    DISPLAY webpage
+
+    WHILE TRUE 
+        IF Session Input Changed THEN
+            Session = Session Input
+            CLEAR webpage
+            DISPLAY get_drivers
+        ENDIF
+        IF Driver Selection Changed THEN
+            Drivers = Driver Selection
+        ENDIF
+        IF Generate Graph Input THEN
+            DISPLAY get_graph(Drivers, Session)
+        ENDIF
+    ENDWHILE
+END MAINLINE

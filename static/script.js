@@ -10,9 +10,8 @@ function createDriverButtons(drivers, driverColors) {
         const btn = document.createElement('button');
         btn.className = 'driver-btn';
         btn.dataset.driver = driver;
-        btn.dataset.color = driverColors[driver] || '#333';
+        btn.dataset.color = driverColors[driver] || '#4f4f4f';
         btn.textContent = driver;
-        btn.style.backgroundColor = '#333';
         
         btn.addEventListener('click', () => {
             btn.classList.toggle('active');
@@ -29,8 +28,8 @@ function createDriverButtons(drivers, driverColors) {
 
                 selectedDrivers.add(btn.dataset.driver);
             } else {
-                btn.style.backgroundColor = '#333';
-                btn.style.color = 'white';
+                btn.style.backgroundColor = 'var(--f1-card)';
+                btn.style.color = 'var(--f1-light)';                   
                 selectedDrivers.delete(btn.dataset.driver);
             }
         });
@@ -76,6 +75,7 @@ function updateProgressBar(percent, message = "") {
     container.style.display = 'block';           // Ensure it's visible
     bar.style.width = percent + '%';            // Update width
     msg.textContent = message;                  // Update message
+    msg.style.color = 'var(--f1-red)';         // Ensure text is visible
 }
 
 function completeProgressBar() {
@@ -324,10 +324,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('circuit-info').style.display = 'none';
             }
 
-
-                //OI WHY DOES THE WEATHER / TRACK MODULES NOT GO AWAY WHEN THE DROPDOWNS ARE CHANGED???? FIX IT BUDDY
-
-
             setTimeout(() => {
                 plotDiv.innerHTML = '';
                 const graphsContainer = document.createElement('div');
@@ -430,6 +426,31 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.body.removeChild(a);
                 });
             }
+        });
+    });
+
+
+    const toggleBtn = document.getElementById('theme-toggle');
+    const root = document.documentElement;
+    
+    // Set the default theme to dark
+    root.setAttribute('data-theme', 'dark');
+    
+    toggleBtn.textContent = 'Switch to Light Mode';
+    
+    toggleBtn.addEventListener('click', () => {
+        const newTheme = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme); // You can still store the theme if you want to persist it
+        toggleBtn.textContent = newTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+        fetch('/api/set-theme', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ theme: newTheme })
+        }).catch(error => {
+            console.error('Error saving theme preference:', error);
         });
     });
 

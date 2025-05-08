@@ -1,17 +1,17 @@
-// the function get_session_data returns a session object with the data for the given year and race
-// the function normalize_team_name normalizes the team name to a standard format
-// the function .unique() returns the unique values in a series
-// the function .tolist() converts a series to a list
-// the function get_driver_colour returns the color associated with a team name
-BEGIN get_drivers (Desired_Year, Desired_Race)
-    Session = get_session_data(Desired_Year, Desired_Race, 'R')
-    Drivers = Session.laps['Driver'].unique().tolist()
-    colours = {}
-    FOR i = 0 TO Drivers.length - 1 STEP 1
-        info = Session.get_drivers(i)
-        team = normalize_team_name(info['TeamName'])
-        colours[i] = get_driver_colour(team)
+// A funciton that iterates through a database of circuit info,
+// then matches and returns the user's desired circuit data
+BEGIN get_circuit_info (race_key, CIRCUIT_DATABASE)
+    circuit_data = ""
+    FOR i = 0 TO CIRCUIT_DATABASE.length -1 STEP 1
+        IF race_key = CIRCUIT_DATABASE[i].key THEN
+            circuit_data = CIRCUIT_DATABASE[i].key
+        ENDIF
     NEXT i
     ENDFOR
-    RETURN colours , Drivers
-END get_drivers
+
+    IF circuit_data NOT "" THEN
+        RETURN circuit_data
+    ELSE
+        RETURN "Circuit data not found"
+    ENDIF
+END get_circuit_info
