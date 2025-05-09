@@ -187,11 +187,11 @@ def normalize_team_name(name):
 def get_driver_color(team_name):
     """Get a safe team colour, defaulting to white on error, with special case for HAAS."""
     try:
-        if team_name == 'haas':
-            return '#d3d3d3'  # Light grey for HAAS
+        if team_name == 'Haas F1 Team':
+            return '#c4c4c4'  # Light grey for HAAS
         return fastf1.plotting.team_color(team_name)
     except:
-        return '#ffffff'  # Default to white on error
+        return '#333'  # Default to white on error
 
 def build_team_styles(teammates, selected_drivers):
     """
