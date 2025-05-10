@@ -194,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Please select at least one driver before generating the graph.");
             return;
         }
+        document.getElementById("graph-label").style.display = "none";
 
         showProgressBar();              // 🔴 Start progress bar
         updateProgressBar(10, "Checking user input...");          // 🔴 Initial progress
@@ -432,25 +433,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const toggleBtn = document.getElementById('theme-toggle');
     const root = document.documentElement;
-    
-    // Set the default theme to dark
+
+    // Set default to dark theme
     root.setAttribute('data-theme', 'dark');
-    
     toggleBtn.textContent = 'Switch to Light Mode';
-    
+
     toggleBtn.addEventListener('click', () => {
-        const newTheme = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        const currentTheme = root.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        // Update UI immediately
         root.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme); // You can still store the theme if you want to persist it
         toggleBtn.textContent = newTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+        
+        // Send theme to backend
         fetch('/api/set-theme', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ theme: newTheme })
-        }).catch(error => {
-            console.error('Error saving theme preference:', error);
+        })
+        .then(() => {
+            // If graphs are currently displayed, simulate Generate button click
+            if (document.querySelector('.graph-item')) {
+                const generateBtn = document.getElementById('generate-btn');
+                if (generateBtn) {
+                    generateBtn.click(); // This will reuse all your existing generation code
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error updating theme:', error);
         });
     });
 

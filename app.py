@@ -231,8 +231,6 @@ def set_theme():
         plotly_template = 'plotly_white'
     else:
         plotly_template = 'plotly_dark'
-    
-    print(f"Plotly template set to: {plotly_template}")  # For debugging/logging
 
     return jsonify({'success': True, 'template': plotly_template})
 
