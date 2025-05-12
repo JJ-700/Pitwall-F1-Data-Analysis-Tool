@@ -284,7 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span class="weather-value">${data.weather.humidity}%</span>
                         </div>
                         <div class="weather-item">
-                            <span class="weather-label">Rainfall</span>
+                            <span class="weather-label">Total Rainfall</span>
                             <span class="weather-value">${data.weather.rainfall}mm</span>
                         </div>
                     </div>
@@ -403,7 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="loading-container" style="border: 3px solidrgb(255, 255, 255); padding: 16px; border-radius: 8px; background-color: #e10600;">
                   <div class="loading-flag" style="font-size: 2em; text-align: center;">⚠️</div>
                   <div class="loading-text" style="font-weight: bold; font-size: 1.2em; text-align: center;">Error loading data</div>
-                  <div class="error-details" style="color:rgb(255, 255, 255); margin-top: 10px; text-align: center;">${message}, please ensure the driver completed at least one race lap before retiring</div>
+                  <div class="error-details" style="color:rgb(255, 255, 255); margin-top: 10px; text-align: center;">${message}, please ensure the driver(s) completed at least one race lap before retiring</div>
               </div>
             `;
           });
@@ -457,7 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (document.querySelector('.graph-item')) {
                 const generateBtn = document.getElementById('generate-btn');
                 if (generateBtn) {
-                    generateBtn.click(); // This will reuse all your existing generation code
+                    generateBtn.click(); // This will reuse existing generation code
                 }
             }
         })
@@ -500,25 +500,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    document.addEventListener('keydown', async (e) => {
-        if (e.key === 'Escape') {
-            const enlargedItems = document.querySelectorAll('.graph-item.enlarged');
-            const hiddenItems = document.querySelectorAll('.graph-item.hide');
+        document.addEventListener('keydown', async (e) => {
+            if (e.key === 'Escape') {
+                const enlargedItems = document.querySelectorAll('.graph-item.enlarged');
+                const hiddenItems = document.querySelectorAll('.graph-item.hide');
 
-            enlargedItems.forEach(item => item.classList.remove('enlarged'));
-            hiddenItems.forEach(item => item.classList.remove('hide'));
+                // Remove classes first
+                enlargedItems.forEach(item => item.classList.remove('enlarged'));
+                hiddenItems.forEach(item => item.classList.remove('hide'));
 
-            const allGraphItems = document.querySelectorAll('.graph-item');
-            setTimeout(() => {
-                allGraphItems.forEach(graph => {
-                    Plotly.Plots.resize(graph).then(() => {
-                        Plotly.relayout(graph, { autosize: true });
+                // Alternative 2: Use setTimeout to allow DOM to update before resizing
+                const allGraphItems = document.querySelectorAll('.graph-item');
+                setTimeout(() => {
+                    allGraphItems.forEach(graph => {
+                        Plotly.Plots.resize(graph).then(() => {
+                            Plotly.relayout(graph, {autosize: true});
+                        });
                     });
-                });
-            }, 150);
-        }
-    });
-    
+                }, 150); // Small delay to ensure CSS changes are applied THIS IS CRITICAL
+            }
+        }); //THIS WORKS DO NOT CHANGE
 
     loadRacesForYear(yearDropdown.value);
 });

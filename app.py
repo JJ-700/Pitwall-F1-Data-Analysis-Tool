@@ -193,24 +193,38 @@ def get_driver_color(team_name):
     except:
         return '#333'  # Default to white on error
 
+def get_teammates(session):
+    """Returns dict mapping team names to driver CODES (not numbers)"""
+    teams = {}
+    for driver in session.drivers:
+        try:
+            info = session.get_driver(driver)
+            team = info['TeamName']
+            driver_code = info['Abbreviation']  # Get 'VER' instead of '1'
+            
+            if team not in teams:
+                teams[team] = []
+            teams[team].append(driver_code)
+        except Exception as e:
+            print(f"Skipping driver {driver}: {str(e)}")
+            continue
+    return teams
+
 def build_team_styles(teammates, selected_drivers):
-    """
-    Returns a dict of dicts:
-      { normalized_team_name: { driver1: 'dash', driver2: 'solid', … } }
-    Only for teams where ≥2 selected_drivers exist.
-    """
     styles = {}
-    for team, drivers in teammates.items():
-        # filter & normalize
-        drivers = [d for d in drivers if d in selected_drivers]
-        if len(drivers) > 1:
+    selected_drivers = set(selected_drivers)  # For faster lookup
+    
+    for team, driver_codes in teammates.items():
+        # Find which of this team's drivers are selected
+        selected_in_team = [d for d in driver_codes if d in selected_drivers]
+        
+        if len(selected_in_team) >= 2:  # Only style if ≥2 teammates selected
             norm = normalize_team_name(team)
-            styles[norm] = {}
-            # first gets dash, rest solid
-            styles[norm][drivers[0]] = 'dash'
-            for d in drivers[1:]:
-                styles[norm][d] = 'solid'
-    return styles
+            styles[norm] = {
+                selected_in_team[0]: 'dot',
+                **{d: 'solid' for d in selected_in_team[1:]}
+            }
+    return styles #this works now lols
 
 #////////////////APP ROUTES BELOW///////////////////////
 
@@ -429,13 +443,11 @@ def create_position_figure(session, selected_drivers):
 
 def create_tyre_figure(session, selected_drivers):
     fig = go.Figure()
-    teammates = get_teammates(session)
-    team_styles = build_team_styles(teammates, selected_drivers)
     has = False
 
     for driver in selected_drivers:
         laps = session.laps.pick_drivers(driver)
-        stints = laps[['LapNumber','Compound','Stint']]
+        stints = laps[['LapNumber', 'Compound', 'Stint']]
         if stints.empty:
             continue
 
@@ -445,18 +457,20 @@ def create_tyre_figure(session, selected_drivers):
 
         for stint_num, data in stints.groupby('Stint'):
             start = data['LapNumber'].min()
-            end   = data['LapNumber'].max()
-            dash  = team_styles.get(team, {}).get(driver, None)
+            end = data['LapNumber'].max()
 
             fig.add_trace(go.Scatter(
-                x=[start, end], y=[driver, driver],
+                x=[start, end],
+                y=[driver, driver],
                 mode='lines',
                 name=f"{driver} Stint {stint_num}",
-                line=dict(width=10, color=color, dash=dash) if dash else dict(width=10, color=color),
+                line=dict(width=10, color=color),  # ← no dash variation
                 hoverinfo='text',
-                hovertext=(f"Driver: {driver}<br>Stint: {stint_num}"
-                           f"<br>Compound: {data['Compound'].iloc[0]}"
-                           f"<br>Laps: {start}-{end}"),
+                hovertext=(
+                    f"Driver: {driver}<br>Stint: {stint_num}"
+                    f"<br>Compound: {data['Compound'].iloc[0]}"
+                    f"<br>Laps: {start}-{end}"
+                ),
                 legendgroup=driver
             ))
         has = True

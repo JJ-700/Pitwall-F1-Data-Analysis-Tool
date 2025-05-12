@@ -460,3 +460,19 @@ button {
 #theme-toggle:hover {
     background-color: var(--f1-muted);
 }
+
+/* Prevent Plotly from auto-resizing */
+.plot-container.plotly {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Ensure graph container has stable dimensions */
+.graph-item {
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.graph-item.enlarged {
+    height: 80vh !important; /* Force full height */
+}
