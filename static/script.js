@@ -92,12 +92,39 @@ function resetProgressBar() {
     document.getElementById('progress-bar-container').style.display = 'none';
 }
 
-
 // Initialize on load
 document.addEventListener('DOMContentLoaded', () => {
     const yearDropdown = document.getElementById('year');
     const raceDropdown = document.getElementById('race');
-    document.getElementById('instructional-modal').style.display = 'block';      
+    document.getElementById('instructional-modal').style.display = 'block';
+
+    // Define raceToCountry at the top level of the event listener
+    const raceToCountry = {
+        'Bahrain Grand Prix': 'bahrain',
+        'Saudi Arabian Grand Prix': 'saudi-arabia',
+        'Australian Grand Prix': 'australia',
+        'Japanese Grand Prix': 'japan',
+        'Chinese Grand Prix': 'china',
+        'Miami Grand Prix': 'united-states',
+        'Emilia Romagna Grand Prix': 'italy',
+        'Monaco Grand Prix': 'monaco',
+        'Canadian Grand Prix': 'canada',
+        'Spanish Grand Prix': 'spain',
+        'Austrian Grand Prix': 'austria',
+        'British Grand Prix': 'united-kingdom',
+        'Hungarian Grand Prix': 'hungary',
+        'Belgian Grand Prix': 'belgium',
+        'Dutch Grand Prix': 'netherlands',
+        'Italian Grand Prix': 'italy',
+        'Azerbaijan Grand Prix': 'azerbaijan',
+        'Singapore Grand Prix': 'singapore',
+        'United States Grand Prix': 'united-states',
+        'Mexico City Grand Prix': 'mexico',
+        'São Paulo Grand Prix': 'brazil',
+        'Las Vegas Grand Prix': 'united-states',
+        'Qatar Grand Prix': 'qatar',
+        'Abu Dhabi Grand Prix': 'united-arab-emirates'
+    };
 
     function loadRacesForYear(year) {
         raceDropdown.innerHTML = '<option value="">Loading races...</option>';
@@ -126,6 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.races.length > 0) {
                 raceDropdown.value = data.races[0].value;
                 loadDrivers();
+                loadSeasonFlags(year, data.races); // Pass the races data to avoid duplicate fetch
             }
         })
         .catch(error => {
@@ -170,6 +198,63 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function loadSeasonFlags(year, racesData = null) {
+        const flagsContainer = document.getElementById('flags-container');
+        flagsContainer.innerHTML = '<div class="loading-text-drivers">Loading flags...</div>';
+        
+        // Use provided races data if available, otherwise fetch it
+        if (racesData) {
+            renderFlags(racesData);
+        } else {
+            fetch('/get_races', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ year: year })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+                renderFlags(data.races);
+            })
+            .catch(error => {
+                flagsContainer.innerHTML = '<div class="error-text">Failed to load flags</div>';
+                console.error('Error loading flags:', error);
+            });
+        }
+
+        function renderFlags(races) {
+            flagsContainer.innerHTML = '';
+            races.forEach(race => {
+                const flagName = raceToCountry[race.name] || 'default';
+                const flagItem = document.createElement('div');
+                flagItem.className = 'flag-item';
+                flagItem.title = race.name;
+                
+                const flagImg = document.createElement('img');
+                flagImg.src = `/static/${flagName}-flag.png`;
+                flagImg.alt = race.name;
+                flagImg.className = 'flag-img';
+                flagImg.onerror = function() {
+                    this.src = '/static/australia-flag.png';
+                };
+                
+                const flagNameSpan = document.createElement('span');
+                flagNameSpan.className = 'flag-name';
+                flagNameSpan.textContent = race.name.replace(' Grand Prix', '');
+                
+                flagItem.appendChild(flagImg);
+                flagItem.appendChild(flagNameSpan);
+                flagsContainer.appendChild(flagItem);
+                
+                flagItem.addEventListener('click', () => {
+                    const raceDropdown = document.getElementById('race');
+                    raceDropdown.value = race.value;
+                    raceDropdown.dispatchEvent(new Event('change'));
+                });
+            });
+        }
+    }
+
     yearDropdown.addEventListener('change', () => {
         document.getElementById('plot').innerHTML = '';
         document.getElementById('weather-info').style.display = 'none';
@@ -196,35 +281,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         document.getElementById("graph-label").style.display = "none";
 
-        showProgressBar();              // 🔴 Start progress bar
-        updateProgressBar(10, "Checking user input...");          // 🔴 Initial progress
-
-        const raceToCountry = {
-            'Bahrain Grand Prix': 'bahrain',
-            'Saudi Arabian Grand Prix': 'saudi-arabia',
-            'Australian Grand Prix': 'australia',
-            'Japanese Grand Prix': 'japan',
-            'Chinese Grand Prix': 'china',
-            'Miami Grand Prix': 'united-states',
-            'Emilia Romagna Grand Prix': 'italy',
-            'Monaco Grand Prix': 'monaco',
-            'Canadian Grand Prix': 'canada',
-            'Spanish Grand Prix': 'spain',
-            'Austrian Grand Prix': 'austria',
-            'British Grand Prix': 'united-kingdom',
-            'Hungarian Grand Prix': 'hungary',
-            'Belgian Grand Prix': 'belgium',
-            'Dutch Grand Prix': 'netherlands',
-            'Italian Grand Prix': 'italy',
-            'Azerbaijan Grand Prix': 'azerbaijan',
-            'Singapore Grand Prix': 'singapore',
-            'United States Grand Prix': 'united-states',
-            'Mexico City Grand Prix': 'mexico',
-            'São Paulo Grand Prix': 'brazil',
-            'Las Vegas Grand Prix': 'united-states',
-            'Qatar Grand Prix': 'qatar',
-            'Abu Dhabi Grand Prix': 'united-arab-emirates'
-        };
+        showProgressBar();
+        updateProgressBar(10, "Checking user input...");
 
         const flagName = raceToCountry[raceName] || 'country-flag-default';
         document.getElementById('plot').innerHTML = `
@@ -234,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     alt="Spinning Tyre">
             </div>
         `;
-        updateProgressBar(15,"Preparing backend request...");          // 🔴 After loading spinner appears
+        updateProgressBar(15,"Preparing backend request...");
         fetch('/get_graph', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -245,9 +303,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 graph_types: Array.from(selectedGraphTypes)
             })
         })
-        
         .then(response => {
-            updateProgressBar(50,"Checking response...");      // 🔴 Server responded
+            updateProgressBar(50,"Checking response...");
             if (!response.ok) {
                 return response.json().then(err => { throw new Error(err.error) });
             }
@@ -257,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.error) {
                 throw new Error(data.error);
             }
-            updateProgressBar(70,"Processing graphs...");      // 🔴 Just before processing
+            updateProgressBar(70,"Processing graphs...");
             const plotDiv = document.getElementById('plot');
             plotDiv.innerHTML = `
                 <div class="loading-container-row">
@@ -289,9 +346,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
                 `;
-                weatherContainer.style.display = 'block'; // Show only when we have data
+                weatherContainer.style.display = 'block';
             } else {
-                document.getElementById('weather-info').style.display = 'none'; // Hide if no data
+                document.getElementById('weather-info').style.display = 'none';
             }
 
             if (data.circuit_info) {
@@ -365,7 +422,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 document.getElementById('graph-controls').style.display = 'block';
-                // Auto maximize if only one graph is selected
                 if (data.selected_graphs.length === 1) {
                     const onlyGraphType = data.selected_graphs[0];
                     const graphDiv = document.getElementById(`graph-${onlyGraphType}`);
@@ -382,22 +438,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
 
-                completeProgressBar(); // ✅ Finish progress bar
+                completeProgressBar();
             }, 100);
         })
         .catch(error => {
-            resetProgressBar(); // ✅ Reset if error
+            resetProgressBar();
             console.error('Error:', error);
             
             const message = error.message.includes("No data") || error.message.includes("400")
               ? "It looks like one of the selected drivers may not have completed any laps in this race (e.g., retired on lap 0). Please try deselecting them and generating the graph again."
               : error.message;
             
-            // Optional: If your spinner is in another container, clear that too:
             const loader = document.querySelector('.loading-container');
             if (loader) loader.remove();
 
-            // Kill spinner
             const plotDiv = document.getElementById('plot');
             plotDiv.innerHTML = `
               <div class="loading-container" style="border: 3px solidrgb(255, 255, 255); padding: 16px; border-radius: 8px; background-color: #e10600;">
@@ -407,9 +461,8 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
             `;
           });
-          
     });
-
+    
     document.getElementById('export-btn').addEventListener('click', () => {
         const graphItems = document.querySelectorAll('.graph-item');
         if (graphItems.length === 0) return;
@@ -429,7 +482,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
-
 
     const toggleBtn = document.getElementById('theme-toggle');
     const root = document.documentElement;
@@ -483,7 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
-    // Show modal on double-click of the heading
+
     document.getElementById('site').addEventListener("dblclick", () => {
         const modal = document.getElementById("instructional-modal");
         modal.style.display = "block";
@@ -500,26 +552,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-        document.addEventListener('keydown', async (e) => {
-            if (e.key === 'Escape') {
-                const enlargedItems = document.querySelectorAll('.graph-item.enlarged');
-                const hiddenItems = document.querySelectorAll('.graph-item.hide');
+    document.addEventListener('keydown', async (e) => {
+        if (e.key === 'Escape') {
+            const enlargedItems = document.querySelectorAll('.graph-item.enlarged');
+            const hiddenItems = document.querySelectorAll('.graph-item.hide');
 
-                // Remove classes first
-                enlargedItems.forEach(item => item.classList.remove('enlarged'));
-                hiddenItems.forEach(item => item.classList.remove('hide'));
+            // Remove classes first
+            enlargedItems.forEach(item => item.classList.remove('enlarged'));
+            hiddenItems.forEach(item => item.classList.remove('hide'));
 
-                // Alternative 2: Use setTimeout to allow DOM to update before resizing
-                const allGraphItems = document.querySelectorAll('.graph-item');
-                setTimeout(() => {
-                    allGraphItems.forEach(graph => {
-                        Plotly.Plots.resize(graph).then(() => {
-                            Plotly.relayout(graph, {autosize: true});
-                        });
+            // Alternative 2: Use setTimeout to allow DOM to update before resizing
+            const allGraphItems = document.querySelectorAll('.graph-item');
+            setTimeout(() => {
+                allGraphItems.forEach(graph => {
+                    Plotly.Plots.resize(graph).then(() => {
+                        Plotly.relayout(graph, {autosize: true});
                     });
-                }, 150); // Small delay to ensure CSS changes are applied THIS IS CRITICAL
-            }
-        }); //THIS WORKS DO NOT CHANGE
+                });
+            }, 150); // Small delay to ensure CSS changes are applied THIS IS CRITICAL
+        }
+    });
 
     loadRacesForYear(yearDropdown.value);
 });
