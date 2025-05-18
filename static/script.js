@@ -202,7 +202,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const flagsContainer = document.getElementById('flags-container');
         flagsContainer.innerHTML = '<div class="loading-text-drivers">Loading flags...</div>';
         
-        // Use provided races data if available, otherwise fetch it
         if (racesData) {
             renderFlags(racesData);
         } else {
@@ -224,11 +223,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function renderFlags(races) {
             flagsContainer.innerHTML = '';
+            const currentRace = document.getElementById('race').value;
+            
             races.forEach(race => {
                 const flagName = raceToCountry[race.name] || 'default';
                 const flagItem = document.createElement('div');
                 flagItem.className = 'flag-item';
                 flagItem.title = race.name;
+                flagItem.setAttribute('data-race-value', race.value);
                 
                 const flagImg = document.createElement('img');
                 flagImg.src = `/static/${flagName}-flag.png`;
@@ -244,16 +246,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 flagItem.appendChild(flagImg);
                 flagItem.appendChild(flagNameSpan);
-                flagsContainer.appendChild(flagItem);
+                
+                if (race.value === currentRace) {
+                    flagItem.classList.add('active');
+                }
                 
                 flagItem.addEventListener('click', () => {
+                    document.querySelectorAll('.flag-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    flagItem.classList.add('active');
+                    
                     const raceDropdown = document.getElementById('race');
                     raceDropdown.value = race.value;
                     raceDropdown.dispatchEvent(new Event('change'));
                 });
+                
+                flagsContainer.appendChild(flagItem);
             });
         }
     }
+
 
     yearDropdown.addEventListener('change', () => {
         document.getElementById('plot').innerHTML = '';
@@ -263,6 +276,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     raceDropdown.addEventListener('change', () => {
+        // Update flag highlights
+        document.querySelectorAll('.flag-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        const currentRace = document.getElementById('race').value;
+        document.querySelectorAll('.flag-item').forEach(item => {
+            if (item.getAttribute('data-race-value') === currentRace) {
+                item.classList.add('active');
+            }
+        })
         document.getElementById('plot').innerHTML = '';
         document.getElementById('weather-info').style.display = 'none';
         document.getElementById('circuit-info').style.display = 'none';
@@ -569,9 +592,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         Plotly.relayout(graph, {autosize: true});
                     });
                 });
-            }, 150); // Small delay to ensure CSS changes are applied THIS IS CRITICAL
+            }, 170); // Small delay to ensure CSS changes are applied THIS IS CRITICAL
         }
     });
-
     loadRacesForYear(yearDropdown.value);
 });
