@@ -1,4 +1,3 @@
-import fastf1.api
 from flask import Flask, render_template, request, jsonify
 import fastf1
 import plotly.graph_objs as go
@@ -38,15 +37,17 @@ def normalize_team_name(name):
     """Apply your special Racing Bulls → RB rule."""
     return "RB" if name == "Racing Bulls" else name
 
-def get_driver_color(team_name):
+def get_driver_color(team_name,session):
     """Get a safe team colour, defaulting to white on error, with special case for HAAS."""
     try:
         if team_name == 'Haas F1 Team':
             return '#c4c4c4'  # Light grey for HAAS
-        return fastf1.plotting.team_color(team_name)
+        if team_name == 'Red Bull Racing':
+            return '#fcd700' # Yellow for Red Bull Racing
+        return fastf1.plotting.get_team_color(team_name, session=session)
     except:
         return '#333'  # Default to white on error
-
+    
 def get_teammates(session):
     """Returns dict mapping team names to driver CODES (not numbers)"""
     teams = {}
@@ -116,7 +117,7 @@ def get_drivers():
         for d in drivers:
             info = session.get_driver(d)
             team = normalize_team_name(info['TeamName'])
-            colors[d] = get_driver_color(team)
+            colors[d] = get_driver_color(team, session)
         return jsonify({'drivers': drivers, 'driver_colors': colors})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -228,7 +229,7 @@ def create_lap_time_figure(session, selected_drivers):
 
         info = session.get_driver(driver)
         team = normalize_team_name(info['TeamName'])
-        color = get_driver_color(team)
+        color = get_driver_color(team, session)
 
         # base style
         style = dict(width=2, color=color)
@@ -274,7 +275,7 @@ def create_position_figure(session, selected_drivers):
 
         info = session.get_driver(driver)
         team = normalize_team_name(info['TeamName'])
-        color = get_driver_color(team)
+        color = get_driver_color(team, session)
 
         style = dict(width=2, color=color)
         if team in team_styles and driver in team_styles[team]:
@@ -315,7 +316,7 @@ def create_tyre_figure(session, selected_drivers):
 
         info = session.get_driver(driver)
         team = normalize_team_name(info['TeamName'])
-        color = get_driver_color(team)
+        color = get_driver_color(team, session)
 
         for stint_num, data in stints.groupby('Stint'):
             start = data['LapNumber'].min()
@@ -375,7 +376,7 @@ def create_quali_figure(session, selected_drivers):
         d = row["Driver"]
         info = qs.get_driver(d)
         team = normalize_team_name(info['TeamName'])
-        color = get_driver_color(team)
+        color = get_driver_color(team, session)
 
         fig.add_trace(go.Bar(
             y=[d],
