@@ -1,3 +1,4 @@
+src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
 const selectedDrivers = new Set();
 const selectedGraphTypes = new Set(['laptimes']);
 
@@ -96,7 +97,6 @@ function resetProgressBar() {
 document.addEventListener('DOMContentLoaded', () => {
     const yearDropdown = document.getElementById('year');
     const raceDropdown = document.getElementById('race');
-    document.getElementById('instructional-modal').style.display = 'block';
 
     // Define raceToCountry at the top level of the event listener
     const raceToCountry = {
@@ -302,7 +302,10 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Please select at least one driver before generating the graph.");
             return;
         }
-        document.getElementById("graph-label").style.display = "none";
+        document.querySelectorAll("h2, .modal-text.graph-label").forEach(el => {
+            el.style.display = "none";
+        });
+
 
         showProgressBar();
         updateProgressBar(10, "Checking user input...");
@@ -575,6 +578,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    document.getElementById("accessability-instructions").addEventListener("click", function() {
+        const instructions = document.getElementById("accessability");
+        if (instructions) {
+            instructions.style.display = "block";
+        } else {
+            console.error('Element with ID "accessability" not found.');
+        }
+    });
+    
     document.addEventListener('keydown', async (e) => {
         if (e.key === 'Escape') {
             const enlargedItems = document.querySelectorAll('.graph-item.enlarged');
@@ -594,6 +606,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }, 170); // Small delay to ensure CSS changes are applied THIS IS CRITICAL
         }
+        // Add this new condition for the "A" key
+        if (e.key === 'a' || e.key === 'A') {
+            const modal = document.getElementById("accessability");
+            if (modal) {
+                modal.style.display = modal.style.display === "none" || !modal.style.display ? "block" : "none";
+            }
+        }   
     });
     loadRacesForYear(yearDropdown.value);
 });

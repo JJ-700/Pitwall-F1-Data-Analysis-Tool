@@ -6,6 +6,7 @@
     <script src="{{ url_for('static', filename='script.js') }}"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://unpkg.com/heroicons@2.0.13/dist/heroicons.min.js"></script>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css')}}">
 </head>
 <body>
@@ -57,7 +58,7 @@
                 <div class="action-buttons">
                     <button id="generate-btn">Generate Graphs</button>
                     <div id="graph-controls" style="display: none;">
-                        <button id="export-btn" class="control-btn">Export as PNG</button>
+                        <button id="export-btn" class="control-btn">Export as PNG(s)</button>
                     </div>
                 </div>
             </div>
@@ -73,7 +74,14 @@
                 <div id="progress-bar"></div>
                 <div id="progress-message" style="margin-top: 5px; font-size: 0.9em; color: #ffffff;"></div>
             </div>
-            <p class="modal-text" id="graph-label"><em>graphs will appear here</em></p>
+            <h2 style="text-align: center;" >Welcome to Pitwall F1</h2>
+            <p class="modal-text graph-label"><em>This tool helps visualize F1 data. Select the drivers, year and race to begin</em></p>
+            <p class="modal-text graph-label"><em>Double-click the top-left heading if you ever need these tips again</em></p>
+            <p class="modal-text graph-label"><em>Double-click graph subtitles to make them fullscreen and enhance their detail</em></p>
+            <p class="modal-text graph-label"><em>Press Escape to minimise graphs and return to the grid panel</em></p>
+            <p class="modal-text graph-label"><em>This website has accessability features, dismiss this modal then press "A"</em></p>
+            <p class="modal-text graph-label"><em>*We support light and dark mode, switching themes will regenerate existing graphs</em></p>
+            <p class="modal-text graph-label"><em>graphs will appear here</em></p>
             <div id="plot"></div>
             <div id="lower-container">
                 <div id="weather-info" class="weather-tab" style="display: none; margin-top:1rem; color: #ccc; font-size: 0.9rem;"></div>
@@ -88,18 +96,19 @@
     <p>This is an free, public and Open-Source project distributed under the MIT Lisence, see the full source code <a href="https://github.com/JJ-700">here</a> and thankyou for using Pitwall</p>
     <div style="text-align: center; margin-top: 20px;">
         <button id="theme-toggle" class="control-btn">Toggle Theme</button>
+        <button id="accessability-instructions" class="control-btn">Accessability Instructions</button>
     </div>
     <!-- Instructional Modal -->
-    <div id="instructional-modal" class="modal">
+    <div id="accessability" class="modal">
         <div class="modal-content">
             <span id="close-modal" class="close">&times;</span>
-            <h2>Welcome to Pitwall F1</h2>
-            <p class="modal-text">This tool helps visualize F1 data. Select the drivers, year and race to begin</p>
-            <p class="modal-text">Double-click the top-left heading if you ever need these tips again</p>
-            <p class="modal-text">Double-click graph subtitles to make them fullscreen and enhance their detail</p>
-            <p class="modal-text">Press Escape to minimise graphs and return to the grid panel</p>
-            <p class="modal-text">*We support light and dark mode, switching themes will regenerate existing graphs</p>
-            <button id="got-it-btn">Got it!</button>
+            <h2>Accessability Mode</h2>
+            <p class="modal-text">This website is completely navigable via keyboard!</p>
+            <p class="modal-text">Use the "TAB" key to move through potential selections</p>
+            <p class="modal-text">Use the "SPACE" key to select / toggle graph checkboxes</p>
+            <p class="modal-text">Use the "ENTER" key to select any other button</p>
+            <p class="modal-text">Use the arrow keys to move through the dropdown menu</p>
+            <p class="modal-text">Use the "A" key to appear/dissappear this modal anytime</p>
         </div>
     </div>
 </body>

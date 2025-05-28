@@ -15,6 +15,7 @@ fastf1.plotting.setup_mpl(
     color_scheme='fastf1',
     misc_mpl_mods=False
 )
+#potentially add top3 most recent as statup graphs
 
 # Caching location is autoselected based on the OS and is autoscanned by FastF1 when retreiving data.
 
@@ -38,7 +39,7 @@ def normalize_team_name(name):
     return "RB" if name == "Racing Bulls" else name
 
 def get_driver_color(team_name,session):
-    """Get a safe team colour, defaulting to white on error, with special case for HAAS."""
+    """Get a safe team colour, defaulting to white on error, with special case for HAAS / RBR."""
     try:
         if team_name == 'Haas F1 Team':
             return '#c4c4c4'  # Light grey for HAAS
@@ -49,7 +50,7 @@ def get_driver_color(team_name,session):
         return '#333'  # Default to white on error
     
 def get_teammates(session):
-    """Returns dict mapping team names to driver CODES (not numbers)"""
+    """Returns dict mapping team names to driver CODES"""
     teams = {}
     for driver in session.drivers:
         try:
