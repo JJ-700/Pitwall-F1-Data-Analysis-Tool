@@ -291,7 +291,213 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('circuit-info').style.display = 'none';
         loadDrivers();
     });
-
+   
+    // Initialize carousel
+    const slideContainer = document.getElementById('slideContainer');
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    let currentSlide = 0;
+    
+    // Create slide indicators
+    const indicatorsContainer = document.createElement('div');
+    indicatorsContainer.className = 'slide-indicators';
+    for (let i = 0; i < totalSlides; i++) {
+        const indicator = document.createElement('div');
+        indicator.className = 'slide-indicator';
+        indicator.dataset.index = i;
+        indicator.addEventListener('click', () => goToSlide(i));
+        indicatorsContainer.appendChild(indicator);
+    }
+    document.querySelector('.carousel').appendChild(indicatorsContainer);
+    updateIndicators();
+    
+    // Navigation hint
+    const navigationHint = document.createElement('div');
+    navigationHint.className = 'navigation-hint';
+    navigationHint.textContent = '← → Arrow keys to navigate slides';
+    document.querySelector('.carousel').appendChild(navigationHint);
+    
+    // Function to navigate to a specific slide
+    function goToSlide(index) {
+        if (index < 0) index = totalSlides - 1;
+        else if (index >= totalSlides) index = 0;
+        
+        currentSlide = index;
+        slideContainer.style.transform = `translateX(-${currentSlide * (100 / totalSlides)}%)`;
+        updateIndicators();
+        
+        // Load data for slides when they become active
+        if (currentSlide === 1 && !driverStandingsLoaded) {
+            loadDriverStandings();
+        }
+        if (currentSlide === 2 && !constructorStandingsLoaded) {
+            loadConstructorStandings();
+        }
+    }
+    
+    // Update slide indicators
+    function updateIndicators() {
+        document.querySelectorAll('.slide-indicator').forEach((indicator, i) => {
+            indicator.classList.toggle('active', i === currentSlide);
+        });
+    }
+    
+    // Keyboard navigation for carousel
+    document.addEventListener('keydown', (e) => {
+        // ... existing key handlers ...
+        
+        // Add carousel navigation
+        if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            goToSlide(currentSlide - 1);
+            showNavigationHint();
+        } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            goToSlide(currentSlide + 1);
+            showNavigationHint();
+        }
+    });
+    
+    // Show navigation hint temporarily
+    function showNavigationHint() {
+        navigationHint.style.display = 'block';
+        setTimeout(() => {
+            navigationHint.style.display = 'none';
+        }, 2000);
+    }
+    
+    // Load standings data
+    let driverStandingsLoaded = false;
+    let constructorStandingsLoaded = false;
+    
+    function loadDriverStandings() {
+        const container = document.getElementById('driver-standings-container');
+        const year = document.getElementById('year').value;
+        
+        container.innerHTML = `
+            <div class="loading-container-row">
+                <img src="/static/PNG Tyre.png" class="spinning-tyre" alt="Loading">
+                <div class="loading-text-drivers">Loading driver standings...</div>
+            </div>
+        `;
+        
+        fetch('/driver_standings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ year: year })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                container.innerHTML = `<div class="error">${data.error}</div>`;
+                return;
+            }
+            
+            let tableHTML = `
+                <table class="standings-table">
+                    <thead>
+                        <tr>
+                            <th>Pos</th>
+                            <th>Driver</th>
+                            <th>Team</th>
+                            <th>Points</th>
+                            <th>Wins</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            data.standings.forEach(driver => {
+                tableHTML += `
+                    <tr>
+                        <td>${driver.position}</td>
+                        <td>${driver.driver}</td>
+                        <td>
+                            <span class="team-color" style="background-color: ${driver.team_color};"></span>
+                            ${driver.team}
+                        </td>
+                        <td>${driver.points}</td>
+                        <td>${driver.wins}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = tableHTML;
+            driverStandingsLoaded = true;
+        })
+        .catch(error => {
+            container.innerHTML = `<div class="error">Failed to load driver standings: ${error.message}</div>`;
+        });
+    }
+    
+    function loadConstructorStandings() {
+        const container = document.getElementById('constructor-standings-container');
+        const year = document.getElementById('year').value;
+        
+        container.innerHTML = `
+            <div class="loading-container-row">
+                <img src="/static/PNG Tyre.png" class="spinning-tyre" alt="Loading">
+                <div class="loading-text-drivers">Loading constructor standings...</div>
+            </div>
+        `;
+        
+        fetch('/constructor_standings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ year: year })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                container.innerHTML = `<div class="error">${data.error}</div>`;
+                return;
+            }
+            
+            let tableHTML = `
+                <table class="standings-table">
+                    <thead>
+                        <tr>
+                            <th>Pos</th>
+                            <th>Team</th>
+                            <th>Points</th>
+                            <th>Wins</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            data.standings.forEach(team => {
+                tableHTML += `
+                    <tr>
+                        <td>${team.position}</td>
+                        <td>
+                            <span class="team-color" style="background-color: ${team.color};"></span>
+                            ${team.name}
+                        </td>
+                        <td>${team.points}</td>
+                        <td>${team.wins}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = tableHTML;
+            constructorStandingsLoaded = true;
+        })
+        .catch(error => {
+            container.innerHTML = `<div class="error">Failed to load constructor standings: ${error.message}</div>`;
+        });
+    
+    }
     document.getElementById('generate-btn').addEventListener('click', () => {
         const selectedRace = document.getElementById('race').value;
         const selectedYear = document.getElementById('year').value;

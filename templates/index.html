@@ -65,30 +65,64 @@
         </div>
     </div>    
     
-    <div class="container">
-        <div class="driver-info" id="driver-buttons-container">
-            <!-- Driver buttons will be loaded here dynamically -->
-        </div>
-        <div class="graph-container">
-            <div id="progress-bar-container" style="display: none; margin-top: 10px;">
-                <div id="progress-bar"></div>
-                <div id="progress-message" style="margin-top: 5px; font-size: 0.9em; color: #ffffff;"></div>
+    <div class="carousel">
+        <div class="slides" id="slideContainer">
+            <!-- Slide 1: Race Data Visualization -->
+            <div class="slide">
+                <div class="container">
+                    <div class="driver-info" id="driver-buttons-container">
+                        <!-- Driver buttons will be loaded here dynamically -->
+                    </div>
+                    <div class="graph-container">
+                        <div id="progress-bar-container" style="display: none; margin-top: 10px;">
+                            <div id="progress-bar"></div>
+                            <div id="progress-message" style="margin-top: 5px; font-size: 0.9em; color: #ffffff;"></div>
+                        </div>
+                        <h2 style="text-align: center;" >Welcome to Pitwall F1</h2>
+                        <p class="modal-text graph-label"><em>This tool helps visualize F1 data. Select the drivers, year and race to begin</em></p>
+                        <p class="modal-text graph-label"><em>Double-click the top-left heading if you ever need these tips again</em></p>
+                        <p class="modal-text graph-label"><em>Double-click graph subtitles to make them fullscreen and enhance their detail</em></p>
+                        <p class="modal-text graph-label"><em>Press Escape to minimise graphs and return to the grid panel</em></p>
+                        <p class="modal-text graph-label"><em>This website has accessability features, to view instructions press "A"</em></p>
+                        <p class="modal-text graph-label"><em>*We support light and dark mode, switching themes will regenerate existing graphs</em></p>
+                        <p class="modal-text graph-label"><em>(graphs will appear here)</em></p>
+                        <div id="plot"></div>
+                        <div id="lower-container">
+                            <div id="weather-info" class="weather-tab" style="display: none; margin-top:1rem; color: #ccc; font-size: 0.9rem;"></div>
+                            <div id="circuit-info" class="weather-tab" style="display: none; margin-top:1rem; color: #ccc; font-size: 0.9rem;"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <h2 style="text-align: center;" >Welcome to Pitwall F1</h2>
-            <p class="modal-text graph-label"><em>This tool helps visualize F1 data. Select the drivers, year and race to begin</em></p>
-            <p class="modal-text graph-label"><em>Double-click the top-left heading if you ever need these tips again</em></p>
-            <p class="modal-text graph-label"><em>Double-click graph subtitles to make them fullscreen and enhance their detail</em></p>
-            <p class="modal-text graph-label"><em>Press Escape to minimise graphs and return to the grid panel</em></p>
-            <p class="modal-text graph-label"><em>This website has accessability features, to view instructions press "A"</em></p>
-            <p class="modal-text graph-label"><em>*We support light and dark mode, switching themes will regenerate existing graphs</em></p>
-            <p class="modal-text graph-label"><em>(graphs will appear here)</em></p>
-            <div id="plot"></div>
-            <div id="lower-container">
-                <div id="weather-info" class="weather-tab" style="display: none; margin-top:1rem; color: #ccc; font-size: 0.9rem;"></div>
-                <div id="circuit-info" class="weather-tab" style="display: none; margin-top:1rem; color: #ccc; font-size: 0.9rem;"></div>
+            
+            <!-- Slide 2: Driver Standings -->
+            <div class="slide">
+                <div class="container">
+                    <h2 style="text-align: center;">Driver Standings</h2>
+                    <div id="driver-standings-container">
+                        <div class="loading-container-row">
+                            <img src="/static/PNG Tyre.png" class="spinning-tyre" alt="Loading">
+                            <div class="loading-text-drivers">Loading driver standings...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Slide 3: Constructor Standings -->
+            <div class="slide">
+                <div class="container">
+                    <h2 style="text-align: center;">Constructor Standings</h2>
+                    <div id="constructor-standings-container">
+                        <div class="loading-container-row">
+                            <img src="/static/PNG Tyre.png" class="spinning-tyre" alt="Loading">
+                            <div class="loading-text-drivers">Loading constructor standings...</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
     <div class="flags-container" id="flags-container">
         <!-- Flags will be loaded here dynamically -->
     </div>
@@ -109,8 +143,8 @@
             <p class="modal-text">Use the "ENTER" key to select any other button</p>
             <p class="modal-text">Use the arrow keys to move through the dropdown menu</p>
             <p class="modal-text">Use the "A" key to appear/dissappear this modal anytime</p>
+            <p class="modal-text">Use the LEFT and RIGHT arrow keys to navigate between slides</p>
         </div>
     </div>
 </body>
 </html>
-    <!-- fix fonts -->

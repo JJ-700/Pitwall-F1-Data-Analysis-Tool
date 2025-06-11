@@ -526,3 +526,110 @@ button {
 .flag-item.active .flag-name {
   color: var(--f1-red);
 }
+/* Existing styles remain the same */
+
+/* Add these new styles for the carousel */
+.carousel {
+    width: 100%;
+    max-width: 100%;
+    margin: auto;
+    overflow: hidden;
+    position: relative;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    height: auto;
+    min-height: 500px;
+    background-color: var(--f1-panel);
+    transition: all 0.3s;
+}
+
+.slides {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+    width: 300%; /* 3 slides */
+}
+
+.slide {
+    width: 100%;
+    flex: 0 0 33.3333%; /* Each slide takes one-third of the container */
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Slide indicators */
+.slide-indicators {
+    display: flex;
+    justify-content: center;
+    position: absolute;
+    bottom: 10px;
+    width: 100%;
+    z-index: 100;
+}
+
+.slide-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--f1-muted);
+    margin: 0 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.slide-indicator.active {
+    background-color: var(--f1-red);
+}
+
+/* Standings tables */
+.standings-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: var(--f1-card);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.standings-table th {
+    background-color: var(--f1-red);
+    color: white;
+    padding: 10px 15px;
+    text-align: left;
+}
+
+.standings-table td {
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--f1-border);
+    color: var(--f1-light);
+}
+
+.standings-table tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.standings-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.team-color {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border-radius: 3px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+/* Navigation hints */
+.navigation-hint {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    z-index: 100;
+    display: none;
+}
