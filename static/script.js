@@ -371,133 +371,69 @@ document.addEventListener('DOMContentLoaded', () => {
     let constructorStandingsLoaded = false;
     
     function loadDriverStandings() {
-        const container = document.getElementById('driver-standings-container');
-        const year = document.getElementById('year').value;
-        
-        container.innerHTML = `
-            <div class="loading-container-row">
-                <img src="/static/PNG Tyre.png" class="spinning-tyre" alt="Loading">
-                <div class="loading-text-drivers">Loading driver standings...</div>
-            </div>
-        `;
-        
-        fetch('/driver_standings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ year: year })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                container.innerHTML = `<div class="error">${data.error}</div>`;
-                return;
-            }
-            
-            let tableHTML = `
-                <table class="standings-table">
-                    <thead>
-                        <tr>
-                            <th>Pos</th>
-                            <th>Driver</th>
-                            <th>Team</th>
-                            <th>Points</th>
-                            <th>Wins</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            data.standings.forEach(driver => {
-                tableHTML += `
-                    <tr>
-                        <td>${driver.position}</td>
-                        <td>${driver.driver}</td>
-                        <td>
-                            <span class="team-color" style="background-color: ${driver.team_color};"></span>
-                            ${driver.team}
-                        </td>
-                        <td>${driver.points}</td>
-                        <td>${driver.wins}</td>
-                    </tr>
-                `;
-            });
-            
-            tableHTML += `
-                    </tbody>
-                </table>
-            `;
-            
-            container.innerHTML = tableHTML;
-            driverStandingsLoaded = true;
-        })
-        .catch(error => {
-            container.innerHTML = `<div class="error">Failed to load driver standings: ${error.message}</div>`;
-        });
-    }
+    const container = document.getElementById('driver-standings-container');
+    const year = document.getElementById('year').value;
+
+    container.innerHTML = `
+        <div class="loading-container-row">
+            <img src="/static/PNG Tyre.png" class="spinning-tyre" alt="Loading">
+            <div class="loading-text-drivers">Loading driver standings...</div>
+        </div>
+    `;
+
+    fetch('/driver_standings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ year: year })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            container.innerHTML = `<div class="error">${data.error}</div>`;
+            return;
+        }
+
+        container.innerHTML = ''; // Clear loading content
+        Plotly.newPlot(container, data.figure.data, data.figure.layout);
+        driverStandingsLoaded = true;
+    })
+    .catch(error => {
+        container.innerHTML = `<div class="error">Failed to load driver standings: ${error.message}</div>`;
+    });
+}
     
     function loadConstructorStandings() {
-        const container = document.getElementById('constructor-standings-container');
-        const year = document.getElementById('year').value;
-        
-        container.innerHTML = `
-            <div class="loading-container-row">
-                <img src="/static/PNG Tyre.png" class="spinning-tyre" alt="Loading">
-                <div class="loading-text-drivers">Loading constructor standings...</div>
-            </div>
-        `;
-        
-        fetch('/constructor_standings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ year: year })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                container.innerHTML = `<div class="error">${data.error}</div>`;
-                return;
-            }
-            
-            let tableHTML = `
-                <table class="standings-table">
-                    <thead>
-                        <tr>
-                            <th>Pos</th>
-                            <th>Team</th>
-                            <th>Points</th>
-                            <th>Wins</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            data.standings.forEach(team => {
-                tableHTML += `
-                    <tr>
-                        <td>${team.position}</td>
-                        <td>
-                            <span class="team-color" style="background-color: ${team.color};"></span>
-                            ${team.name}
-                        </td>
-                        <td>${team.points}</td>
-                        <td>${team.wins}</td>
-                    </tr>
-                `;
-            });
-            
-            tableHTML += `
-                    </tbody>
-                </table>
-            `;
-            
-            container.innerHTML = tableHTML;
-            constructorStandingsLoaded = true;
-        })
-        .catch(error => {
-            container.innerHTML = `<div class="error">Failed to load constructor standings: ${error.message}</div>`;
-        });
-    
-    }
+    const container = document.getElementById('constructor-standings-container');
+    const year = document.getElementById('year').value;
+
+    container.innerHTML = `
+        <div class="loading-container-row">
+            <img src="/static/PNG Tyre.png" class="spinning-tyre" alt="Loading">
+            <div class="loading-text-drivers">Loading constructor standings...</div>
+        </div>
+    `;
+
+    fetch('/constructor_standings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ year: year })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            container.innerHTML = `<div class="error">${data.error}</div>`;
+            return;
+        }
+
+        container.innerHTML = ''; // Clear loading content
+        Plotly.newPlot(container, data.figure.data, data.figure.layout);
+        constructorStandingsLoaded = true;
+    })
+    .catch(error => {
+        container.innerHTML = `<div class="error">Failed to load constructor standings: ${error.message}</div>`;
+    });
+}
+
     document.getElementById('generate-btn').addEventListener('click', () => {
         const selectedRace = document.getElementById('race').value;
         const selectedYear = document.getElementById('year').value;

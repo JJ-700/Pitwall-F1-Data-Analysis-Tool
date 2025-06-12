@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import fastf1
+from fastf1.ergast import Ergast
 import plotly.graph_objs as go
 import pandas as pd
 import secrets
@@ -159,6 +160,124 @@ def get_circuit_info():
         return jsonify(circuit_data)
     else:
         return jsonify({"error": "Circuit data not found"}), 404
+
+@app.route('/constructor_standings', methods=['POST'])
+def constructor_standings():
+    data = request.get_json()
+    year = int(data.get('year', 2025))
+
+    try:
+        # Step 1: Fetch constructor standings from Ergast
+        ergast = Ergast()
+        standings = ergast.get_constructor_standings(season=year)
+        if not standings or not standings.content:
+            return jsonify({"error": "Could not fetch constructor standings"}), 500
+
+        standings_df = standings.content[0]
+        team_names = standings_df['constructorName'].tolist()
+        points = standings_df['points'].astype(float).tolist()
+
+        # Step 2: Load latest race session for accurate team colors (FastF1)
+        session = None
+        try:
+            schedule = fastf1.get_event_schedule(year)
+            now = pd.Timestamp.now(tz='UTC')
+            completed_races = schedule[schedule['Session5Date'] < now]
+            if not completed_races.empty:
+                last_race = completed_races.iloc[-1]
+                session = fastf1.get_session(year, last_race['EventName'], 'R')
+                session.load(laps=False, telemetry=False)  # Fast load
+        except Exception as e:
+            print(f"Session load warning: {str(e)}")
+
+        # Step 3: Assign team colors
+        colors = []
+        normalized_teams = []
+
+        for name in team_names:
+            norm_name = normalize_team_name(name)
+            normalized_teams.append(norm_name)
+            try:
+                color = get_driver_color(norm_name, session) if session else '#777777'
+            except Exception as e:
+                print(f"Color fallback for {name}: {str(e)}")
+                color = '#777777'
+            colors.append(color)
+
+        # Step 4: Plot with Plotly
+        fig = go.Figure(data=[
+            go.Bar(
+                x=normalized_teams,
+                y=points,
+                marker=dict(color=colors),
+                text=points,
+                textposition="auto"
+            )
+        ])
+        fig.update_layout(
+            title=f"Constructor Standings – {year}",
+            xaxis_title="Team",
+            yaxis_title="Points",
+            template='plotly_dark'
+        )
+
+        return jsonify({'figure': fig.to_dict()})
+
+    except Exception as e:
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
+
+@app.route('/driver_standings', methods=['POST'])
+def driver_standings():
+    try:
+        data = request.get_json()
+        year = int(data.get('year', 2025))
+
+        # Fetch driver standings from Ergast
+        ergast = Ergast()
+        standings = ergast.get_driver_standings(season=year)
+        if not standings or not standings.content:
+            raise ValueError("No standings data available for the specified year.")
+        standings_df = standings.content[0]
+
+        # Extract drivers and points
+        drivers = standings_df['driverCode'].tolist()
+        points = standings_df['points'].astype(float).tolist()
+
+        # Extract team names from constructorNames (list)
+        raw_teams = standings_df['constructorNames'].tolist()
+        teams = [normalize_team_name(t[0]) if isinstance(t, list) and t else 'Unknown' for t in raw_teams]
+
+        # Get latest race session in the year for accurate colors
+        races = fastf1.get_event_schedule(year)
+        latest_round = races[races['RoundNumber'] == races['RoundNumber'].max()].iloc[0]
+        session = fastf1.get_session(year, latest_round['EventName'], 'R')
+        session.load()
+
+        # Assign colors using the session
+        colors = [get_driver_color(team, session=session) for team in teams]
+
+        # Create bar chart
+        fig = go.Figure(data=[
+            go.Bar(
+                x=drivers,
+                y=points,
+                marker=dict(color=colors),
+                text=points,
+                textposition="auto"
+            )
+        ])
+        fig.update_layout(
+            title=f"Driver Standings – {year}",
+            xaxis_title="Driver Code",
+            yaxis_title="Points",
+            template='plotly_dark'
+        )
+
+        return jsonify({'figure': fig.to_dict()})
+
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return jsonify({"error": "Failed to generate standings"}), 500
 
 @app.route("/get_graph", methods=["POST"])
 def get_graph():
