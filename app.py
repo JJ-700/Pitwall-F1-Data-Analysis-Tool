@@ -105,7 +105,6 @@ def set_theme():
 
     return jsonify({'success': True, 'template': plotly_template})
 
-
 @app.route("/get_drivers", methods=["POST"])
 def get_drivers():
     data = request.get_json()
@@ -136,13 +135,12 @@ def get_races():
             (sched['Session5Date'] < now) &
             (~sched['EventName'].str.contains('Testing', na=False, case=False))
         ]
-        # Sort chronologically
         past_races = past_races.sort_values('Session5Date')
         options = [
             {
                 'value': ev['EventName'].lower().replace(' ', ''),
                 'name': ev['EventName'],
-                'date': ev['Session5Date'].strftime('%Y-%m-%d')  # Optional: include date
+                'date': ev['Session5Date'].strftime('%Y-%m-%d')
             }
             for _, ev in past_races.iterrows()
         ]
@@ -161,23 +159,92 @@ def get_circuit_info():
     else:
         return jsonify({"error": "Circuit data not found"}), 404
 
-@app.route('/constructor_standings', methods=['POST'])
-def constructor_standings():
+# Standings endpoints removed from here
+
+@app.route("/get_graph", methods=["POST"])
+def get_graph():
     data = request.get_json()
+    selected = data.get('drivers', [])
+    race = data.get('race', 'australia')
     year = int(data.get('year', 2025))
+    types = data.get('graph_types', ['laptimes'])
+    race_key = data.get('race', '').lower().replace(' ', '')
+    
+    figures = {}
+    weather_payload = None
+    circuit_info = None
 
+    # Handle standings separately
+    if 'driver_standings' in types or 'constructor_standings' in types:
+        try:
+            if 'driver_standings' in types:
+                fig = create_driver_standings_figure(year)
+                if fig: figures['driver_standings'] = fig.to_dict()
+            if 'constructor_standings' in types:
+                fig = create_constructor_standings_figure(year)
+                if fig: figures['constructor_standings'] = fig.to_dict()
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    # Handle race-specific graphs
+    race_specific_types = [t for t in types if t not in ['driver_standings', 'constructor_standings']]
+    if race_specific_types:
+        try:
+            session = fastf1.get_session(year, race, 'R')
+            session.load()
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+        
+        # Weather and circuit info only for race-specific graphs
+        weather_df = session.weather_data
+        avg_air_temp = weather_df['AirTemp'].mean()
+        avg_track_temp = weather_df['TrackTemp'].mean()
+        total_rainfall_mm = weather_df['Rainfall'].sum()
+        weather_payload = {
+            'air_temp': round(avg_air_temp, 1),
+            'track_temp': round(avg_track_temp, 1),
+            'humidity': round(weather_df['Humidity'].mean(), 1) if 'Humidity' in weather_df else 'N/A',
+            'rainfall': round(float(total_rainfall_mm), 2)
+        }
+        circuit_info = CIRCUIT_DATABASE.get(race_key, None)
+
+        # Generate race-specific figures
+        if 'laptimes' in race_specific_types:
+            f = create_lap_time_figure(session, selected)
+            if f: figures['laptimes'] = f.to_dict()
+        if 'position' in race_specific_types:
+            f = create_position_figure(session, selected)
+            if f: figures['position'] = f.to_dict()
+        if 'tyre' in race_specific_types:
+            f = create_tyre_figure(session, selected)
+            if f: figures['tyre'] = f.to_dict()
+        if 'quali' in race_specific_types:
+            f = create_quali_figure(session, selected)
+            if f: figures['quali'] = f.to_dict()
+
+    if not figures:
+        return jsonify({"error": "No valid data found"}), 400
+
+    return jsonify({
+        'figures': figures, 
+        'selected_graphs': list(figures.keys()),
+        'weather': weather_payload,
+        'circuit_info': circuit_info
+    })
+
+def create_driver_standings_figure(year):
     try:
-        # Step 1: Fetch constructor standings from Ergast
         ergast = Ergast()
-        standings = ergast.get_constructor_standings(season=year)
+        standings = ergast.get_driver_standings(season=year)
         if not standings or not standings.content:
-            return jsonify({"error": "Could not fetch constructor standings"}), 500
-
+            raise ValueError("No standings data available.")
         standings_df = standings.content[0]
-        team_names = standings_df['constructorName'].tolist()
-        points = standings_df['points'].astype(float).tolist()
 
-        # Step 2: Load latest race session for accurate team colors (FastF1)
+        drivers = standings_df['driverCode'].tolist()
+        points = standings_df['points'].astype(float).tolist()
+        raw_teams = standings_df['constructorNames'].tolist()
+        
+        # Load session for colors
         session = None
         try:
             schedule = fastf1.get_event_schedule(year)
@@ -186,11 +253,73 @@ def constructor_standings():
             if not completed_races.empty:
                 last_race = completed_races.iloc[-1]
                 session = fastf1.get_session(year, last_race['EventName'], 'R')
-                session.load(laps=False, telemetry=False)  # Fast load
-        except Exception as e:
-            print(f"Session load warning: {str(e)}")
+                session.load(laps=False, telemetry=False)
+        except Exception:
+            pass
 
-        # Step 3: Assign team colors
+        colors = []
+        display_teams = []
+
+        for team_list in raw_teams:
+            if not isinstance(team_list, list) or not team_list:
+                team_name = "Unknown"
+            else:
+                team_name = team_list[0]
+            color = get_driver_color(team_name, session)
+            colors.append(color)
+            display_teams.append(normalize_team_name(team_name))
+
+        fig = go.Figure(data=[
+            go.Bar(
+                x=drivers,
+                y=points,
+                marker=dict(color=colors),
+                text=points,
+                textposition="auto",
+                hoverinfo='text',
+                hovertext=[
+                    f"Driver: {d}<br>Team: {t}<br>Points: {p}"
+                    for d, t, p in zip(drivers, display_teams, points)
+                ]
+            )
+        ])
+        fig.update_layout(
+            title=f"Driver Standings – {year}",
+            xaxis_title="Driver Code",
+            yaxis_title="Points",
+            template=plotly_template,
+            hovermode="closest"
+        )
+        return fig
+
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return None
+
+def create_constructor_standings_figure(year):
+    try:
+        ergast = Ergast()
+        standings = ergast.get_constructor_standings(season=year)
+        if not standings or not standings.content:
+            return None
+
+        standings_df = standings.content[0]
+        team_names = standings_df['constructorName'].tolist()
+        points = standings_df['points'].astype(float).tolist()
+
+        # Load session for colors
+        session = None
+        try:
+            schedule = fastf1.get_event_schedule(year)
+            now = pd.Timestamp.now(tz='UTC')
+            completed_races = schedule[schedule['Session5Date'] < now]
+            if not completed_races.empty:
+                last_race = completed_races.iloc[-1]
+                session = fastf1.get_session(year, last_race['EventName'], 'R')
+                session.load(laps=False, telemetry=False)
+        except Exception:
+            pass
+
         colors = []
         normalized_teams = []
 
@@ -199,12 +328,10 @@ def constructor_standings():
             normalized_teams.append(norm_name)
             try:
                 color = get_driver_color(norm_name, session) if session else '#777777'
-            except Exception as e:
-                print(f"Color fallback for {name}: {str(e)}")
+            except Exception:
                 color = '#777777'
             colors.append(color)
 
-        # Step 4: Plot with Plotly
         fig = go.Figure(data=[
             go.Bar(
                 x=normalized_teams,
@@ -218,120 +345,15 @@ def constructor_standings():
             title=f"Constructor Standings – {year}",
             xaxis_title="Team",
             yaxis_title="Points",
-            template='plotly_dark'
+            template=plotly_template,
+            hovermode="closest"
         )
-
-        return jsonify({'figure': fig.to_dict()})
-
-    except Exception as e:
-        return jsonify({"error": f"Server error: {str(e)}"}), 500
-
-@app.route('/driver_standings', methods=['POST'])
-def driver_standings():
-    try:
-        data = request.get_json()
-        year = int(data.get('year', 2025))
-
-        # Fetch driver standings from Ergast
-        ergast = Ergast()
-        standings = ergast.get_driver_standings(season=year)
-        if not standings or not standings.content:
-            raise ValueError("No standings data available for the specified year.")
-        standings_df = standings.content[0]
-
-        # Extract drivers and points
-        drivers = standings_df['driverCode'].tolist()
-        points = standings_df['points'].astype(float).tolist()
-
-        # Extract team names from constructorNames (list)
-        raw_teams = standings_df['constructorNames'].tolist()
-        teams = [normalize_team_name(t[0]) if isinstance(t, list) and t else 'Unknown' for t in raw_teams]
-
-        # Get latest race session in the year for accurate colors
-        races = fastf1.get_event_schedule(year)
-        latest_round = races[races['RoundNumber'] == races['RoundNumber'].max()].iloc[0]
-        session = fastf1.get_session(year, latest_round['EventName'], 'R')
-        session.load()
-
-        # Assign colors using the session
-        colors = [get_driver_color(team, session=session) for team in teams]
-
-        # Create bar chart
-        fig = go.Figure(data=[
-            go.Bar(
-                x=drivers,
-                y=points,
-                marker=dict(color=colors),
-                text=points,
-                textposition="auto"
-            )
-        ])
-        fig.update_layout(
-            title=f"Driver Standings – {year}",
-            xaxis_title="Driver Code",
-            yaxis_title="Points",
-            template='plotly_dark'
-        )
-
-        return jsonify({'figure': fig.to_dict()})
+        return fig
 
     except Exception as e:
         print(f"Error: {str(e)}")
-        return jsonify({"error": "Failed to generate standings"}), 500
-
-@app.route("/get_graph", methods=["POST"])
-def get_graph():
-    data = request.get_json()
-    selected = data.get('drivers', [])
-    race = data.get('race', 'australia')
-    year = int(data.get('year', 2025))
-    types = data.get('graph_types', ['laptimes'])
-    race_key = data.get('race', '').lower().replace(' ', '')
-    try:
-        session = fastf1.get_session(year, race, 'R')
-        session.load()
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return None
     
-    # Access weather data
-    weather_df = session.weather_data
-
-    # Calculate average air and track temperatures
-    avg_air_temp = weather_df['AirTemp'].mean()
-    avg_track_temp = weather_df['TrackTemp'].mean()
-
-    # Determine if there was any rainfall
-    total_rainfall_mm = weather_df['Rainfall'].sum()
-
-    # Create a weather payload
-    weather_payload = {
-    'air_temp': round(avg_air_temp, 1),
-    'track_temp': round(avg_track_temp, 1),
-    'humidity': round(weather_df['Humidity'].mean(), 1) if 'Humidity' in weather_df else 'N/A',
-    'rainfall': round(float(total_rainfall_mm), 2)
-    }
-    # Get circuit information from the hardcoded dataset
-    circuit_info = CIRCUIT_DATABASE.get(race_key, None)
-
-    figures = {}
-    if 'laptimes' in types:
-        f = create_lap_time_figure(session, selected)
-        if f: figures['laptimes'] = f.to_dict()
-    if 'position' in types:
-        f = create_position_figure(session, selected)
-        if f: figures['position'] = f.to_dict()
-    if 'tyre' in types:
-        f = create_tyre_figure(session, selected)
-        if f: figures['tyre'] = f.to_dict()
-    if 'quali' in types:
-        f = create_quali_figure(session, selected)
-        if f: figures['quali'] = f.to_dict()
-
-    if not figures:
-        return jsonify({"error": "No valid data found"}), 400
-
-    return jsonify({'figures': figures, 'selected_graphs': list(figures.keys()), 'weather': weather_payload, 'circuit_info': circuit_info})
-
 def create_lap_time_figure(session, selected_drivers):
     fig = go.Figure()
     teammates = get_teammates(session)

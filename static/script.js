@@ -56,7 +56,9 @@ function getGraphTitle(graphType) {
         'laptimes': 'Lap Times Comparison',
         'position': 'Race Position Changes',
         'tyre': 'Tyre Stint Strategy',
-        'quali': 'Qualifying Results'
+        'quali': 'Qualifying Results',
+        'driver_standings': 'Driver Standings',
+        'constructor_standings': 'Constructor Standings'
     };
     return titles[graphType] || graphType;
 }
@@ -327,11 +329,11 @@ document.addEventListener('DOMContentLoaded', () => {
         updateIndicators();
         
         // Load data for slides when they become active
-        if (currentSlide === 1 && !driverStandingsLoaded) {
-            loadDriverStandings();
+        if (currentSlide === 1) {
+            generateStandingsGraph('driver_standings', 'driver-standings-container');
         }
-        if (currentSlide === 2 && !constructorStandingsLoaded) {
-            loadConstructorStandings();
+        if (currentSlide === 2) {
+            generateStandingsGraph('constructor_standings', 'constructor-standings-container');
         }
     }
     
@@ -366,101 +368,81 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2000);
     }
     
-    // Load standings data
-    let driverStandingsLoaded = false;
-    let constructorStandingsLoaded = false;
-    
-    function loadDriverStandings() {
-    const container = document.getElementById('driver-standings-container');
-    const year = document.getElementById('year').value;
-
-    container.innerHTML = `
-        <div class="loading-container-row">
-            <img src="/static/PNG Tyre.png" class="spinning-tyre" alt="Loading">
-            <div class="loading-text-drivers">Loading driver standings...</div>
-        </div>
-    `;
-
-    fetch('/driver_standings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ year: year })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            container.innerHTML = `<div class="error">${data.error}</div>`;
-            return;
-        }
-
-        container.innerHTML = ''; // Clear loading content
-        Plotly.newPlot(container, data.figure.data, data.figure.layout);
-        driverStandingsLoaded = true;
-    })
-    .catch(error => {
-        container.innerHTML = `<div class="error">Failed to load driver standings: ${error.message}</div>`;
-    });
-}
-    
-    function loadConstructorStandings() {
-    const container = document.getElementById('constructor-standings-container');
-    const year = document.getElementById('year').value;
-
-    container.innerHTML = `
-        <div class="loading-container-row">
-            <img src="/static/PNG Tyre.png" class="spinning-tyre" alt="Loading">
-            <div class="loading-text-drivers">Loading constructor standings...</div>
-        </div>
-    `;
-
-    fetch('/constructor_standings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ year: year })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            container.innerHTML = `<div class="error">${data.error}</div>`;
-            return;
-        }
-
-        container.innerHTML = ''; // Clear loading content
-        Plotly.newPlot(container, data.figure.data, data.figure.layout);
-        constructorStandingsLoaded = true;
-    })
-    .catch(error => {
-        container.innerHTML = `<div class="error">Failed to load constructor standings: ${error.message}</div>`;
-    });
-}
+    // Function to generate standings graphs
+    function generateStandingsGraph(graphType, containerId) {
+        const container = document.getElementById(containerId);
+        const year = document.getElementById('year').value;
+        
+        container.innerHTML = `
+            <div class="loading-container-row">
+                <img src="/static/PNG Tyre.png" class="spinning-tyre" alt="Loading">
+                <div class="loading-text-drivers">Loading ${getGraphTitle(graphType)}...</div>
+            </div>
+        `;
+        
+        showProgressBar();
+        updateProgressBar(20, `Loading ${getGraphTitle(graphType)} data...`);
+        
+        fetch('/get_graph', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                drivers: [],
+                race: '',
+                year: year,
+                graph_types: [graphType]
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            container.innerHTML = '';
+            if (data.figures[graphType]) {
+                Plotly.newPlot(container, data.figures[graphType].data, data.figures[graphType].layout);
+            } else {
+                throw new Error(`Graph data for ${graphType} not found`);
+            }
+            completeProgressBar();
+        })
+        .catch(error => {
+            resetProgressBar();
+            container.innerHTML = `<div class="error">${error.message}</div>`;
+        });
+    }
 
     document.getElementById('generate-btn').addEventListener('click', () => {
         const selectedRace = document.getElementById('race').value;
         const selectedYear = document.getElementById('year').value;
         const selectedDrivers = document.querySelectorAll(".driver-btn.active");
         const raceName = document.getElementById('race').options[document.getElementById('race').selectedIndex].text;
+        const selectedGraphTypes = new Set(Array.from(
+            document.querySelectorAll('input[name="graph-type"]:checked')
+        ).map(input => input.value));
 
-        if (selectedDrivers.length === 0) {
-            alert("Please select at least one driver before generating the graph.");
+        // Special handling for standings
+        const isStandingsOnly = selectedGraphTypes.has('driver_standings') || 
+                                selectedGraphTypes.has('constructor_standings');
+        const hasRaceSpecific = selectedGraphTypes.has('laptimes') || 
+                                selectedGraphTypes.has('position') || 
+                                selectedGraphTypes.has('tyre') || 
+                                selectedGraphTypes.has('quali');
+        
+        if (hasRaceSpecific && selectedDrivers.length === 0) {
+            alert("Please select at least one driver for race analysis graphs.");
             return;
         }
-        document.querySelectorAll("h2, .modal-text.graph-label").forEach(el => {
-            el.style.display = "none";
-        });
-
+        
+        if (!isStandingsOnly && !hasRaceSpecific) {
+            alert("Please select at least one graph type.");
+            return;
+        }
 
         showProgressBar();
         updateProgressBar(10, "Checking user input...");
 
-        const flagName = raceToCountry[raceName] || 'country-flag-default';
-        document.getElementById('plot').innerHTML = `
-            <div class="loading-container-row">
-                <img src="/static/PNG Tyre.png"
-                    class="spinning-tyre"
-                    alt="Spinning Tyre">
-            </div>
-        `;
-        updateProgressBar(15,"Preparing backend request...");
         fetch('/get_graph', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -472,7 +454,7 @@ document.addEventListener('DOMContentLoaded', () => {
             })
         })
         .then(response => {
-            updateProgressBar(50,"Checking response...");
+            updateProgressBar(50, "Checking response...");
             if (!response.ok) {
                 return response.json().then(err => { throw new Error(err.error) });
             }
@@ -482,15 +464,43 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.error) {
                 throw new Error(data.error);
             }
-            updateProgressBar(70,"Processing graphs...");
+            updateProgressBar(70, "Processing graphs...");
             const plotDiv = document.getElementById('plot');
-            plotDiv.innerHTML = `
-                <div class="loading-container-row">
-                    <div class="loading-flag">${data.flag_emoji || '🏁'}</div>
-                    <div class="loading-text">Finalizing ${data.event_name || 'race'} data...</div>
-                </div>  
-            `;
+            plotDiv.innerHTML = '';
+            const graphsContainer = document.createElement('div');
+            graphsContainer.className = 'graphs-container';
             
+            // Define desired order
+            const graphTypeOrder = [
+                'laptimes', 'position', 'tyre', 'quali', 
+                'driver_standings', 'constructor_standings'
+            ];
+            
+            graphTypeOrder.forEach(graphType => {
+                if (data.figures[graphType]) {
+                    const graphDiv = document.createElement('div');
+                    graphDiv.className = 'graph-item';
+                    graphDiv.id = `graph-${graphType}`;
+                    
+                    const title = document.createElement('h3');
+                    title.textContent = getGraphTitle(graphType);
+                    graphDiv.appendChild(title);
+                    
+                    graphsContainer.appendChild(graphDiv);
+                }
+            });
+
+            plotDiv.appendChild(graphsContainer);
+
+            // Render each graph
+            Object.entries(data.figures).forEach(([graphType, figureData]) => {
+                const graphDiv = document.getElementById(`graph-${graphType}`);
+                if (graphDiv) {
+                    Plotly.newPlot(graphDiv, figureData.data, figureData.layout);
+                }
+            });
+
+            // Handle weather/circuit info
             if (data.weather) {
                 const weatherContainer = document.getElementById('weather-info');
                 weatherContainer.innerHTML = `
@@ -550,64 +560,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('circuit-info').style.display = 'none';
             }
 
-            setTimeout(() => {
-                plotDiv.innerHTML = '';
-                const graphsContainer = document.createElement('div');
-                graphsContainer.className = 'graphs-container';
-                const graphTypeOrder = ['laptimes', 'position', 'tyre', 'quali'];
-
-                graphTypeOrder.forEach(graphType => {
-                    const graphDiv = document.createElement('div');
-                    graphDiv.className = 'graph-item';
-                    graphDiv.id = `graph-${graphType}`;
-                    const title = document.createElement('h3');
-                    title.textContent = getGraphTitle(graphType);
-                    graphDiv.appendChild(title);
-                    graphsContainer.appendChild(graphDiv);
-                });
-
-                plotDiv.appendChild(graphsContainer);
-
-                data.selected_graphs.forEach(graphType => {
-                    if (data.figures[graphType]) {
-                        const graphDiv = document.getElementById(`graph-${graphType}`);
-                        if (graphDiv) {
-                            Plotly.newPlot(graphDiv, {
-                                data: data.figures[graphType].data,
-                                layout: data.figures[graphType].layout
-                            });
-                        }
-                    }
-                });
-
-                graphTypeOrder.forEach(graphType => {
-                    if (!data.selected_graphs.includes(graphType)) {
-                        const graphDiv = document.getElementById(`graph-${graphType}`);
-                        if (graphDiv) {
-                            graphDiv.style.display = 'none';
-                        }
-                    }
-                });
-
-                document.getElementById('graph-controls').style.display = 'block';
-                if (data.selected_graphs.length === 1) {
-                    const onlyGraphType = data.selected_graphs[0];
-                    const graphDiv = document.getElementById(`graph-${onlyGraphType}`);
-                
-                    document.querySelectorAll('.graph-item').forEach(item => {
-                        if (item !== graphDiv) {
-                            item.classList.add('hide');
-                        }
-                    });
-                
-                    graphDiv.classList.add('enlarged');
-                    Plotly.Plots.resize(graphDiv).then(() => {
-                        Plotly.relayout(graphDiv, { autosize: true });
-                    });
-                }
-
-                completeProgressBar();
-            }, 100);
+            document.getElementById('graph-controls').style.display = 'block';
+            completeProgressBar();
         })
         .catch(error => {
             resetProgressBar();
@@ -617,15 +571,12 @@ document.addEventListener('DOMContentLoaded', () => {
               ? "It looks like one of the selected drivers may not have completed any laps in this race (e.g., retired on lap 0). Please try deselecting them and generating the graph again."
               : error.message;
             
-            const loader = document.querySelector('.loading-container');
-            if (loader) loader.remove();
-
             const plotDiv = document.getElementById('plot');
             plotDiv.innerHTML = `
               <div class="loading-container" style="border: 3px solidrgb(255, 255, 255); padding: 16px; border-radius: 8px; background-color: #e10600;">
                   <div class="loading-flag" style="font-size: 2em; text-align: center;">⚠️</div>
                   <div class="loading-text" style="font-weight: bold; font-size: 1.2em; text-align: center;">Error loading data</div>
-                  <div class="error-details" style="color:rgb(255, 255, 255); margin-top: 10px; text-align: center;">${message}, please ensure the driver(s) completed at least one race lap before retiring</div>
+                  <div class="error-details" style="color:rgb(255, 255, 255); margin-top: 10px; text-align: center;">${message}</div>
               </div>
             `;
           });
