@@ -331,10 +331,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Load data for slides when they become active
         if (currentSlide === 1) {
             generateStandingsGraph('driver_standings', 'driver-standings-container');
-        }
-        if (currentSlide === 2) {
             generateStandingsGraph('constructor_standings', 'constructor-standings-container');
         }
+
     }
     
     // Update slide indicators
@@ -421,6 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedGraphTypes = new Set(Array.from(
             document.querySelectorAll('input[name="graph-type"]:checked')
         ).map(input => input.value));
+        document.getElementById('headingmain').style.display = 'block';
 
         // Clear existing graphs and instruction text
         document.getElementById('plot').innerHTML = '';

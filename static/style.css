@@ -339,8 +339,7 @@ button {
 /* Loading Animation */
 .loading-container-row {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    justify-content: left;
     height: 100vh;
     gap: 30px;
 }
@@ -354,6 +353,8 @@ button {
     height: 120px;
     animation: spin 0.75s linear infinite;
     object-fit: contain;
+    margin-left: 50%;
+    margin-top: 30%;
 }
 
 @keyframes spin {
@@ -546,12 +547,12 @@ button {
 .slides {
     display: flex;
     transition: transform 0.5s ease-in-out;
-    width: 300%; /* 3 slides */
+    width: 200%; /* 3 slides */
 }
 
 .slide {
     width: 100%;
-    flex: 0 0 33.3333%; /* Each slide takes one-third of the container */
+    flex: 0 0 50%; /* Each slide takes one-third of the container */
     padding: 20px;
     box-sizing: border-box;
 }
