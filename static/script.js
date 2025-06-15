@@ -422,6 +422,14 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('input[name="graph-type"]:checked')
         ).map(input => input.value));
 
+        // Clear existing graphs and instruction text
+        document.getElementById('plot').innerHTML = '';
+        document.getElementById('weather-info').style.display = 'none';
+        document.getElementById('circuit-info').style.display = 'none';
+        document.querySelectorAll("h2, .modal-text.graph-label").forEach(el => {
+            el.style.display = "none";
+        });
+
         // Special handling for standings
         const isStandingsOnly = selectedGraphTypes.has('driver_standings') || 
                                 selectedGraphTypes.has('constructor_standings');
@@ -499,6 +507,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     Plotly.newPlot(graphDiv, figureData.data, figureData.layout);
                 }
             });
+            
+            if (Object.keys(data.figures).length === 1) {
+                const onlyGraphType = Object.keys(data.figures)[0];
+                const graphDiv = document.getElementById(`graph-${onlyGraphType}`);
+                
+                document.querySelectorAll('.graph-item').forEach(item => {
+                    if (item !== graphDiv) {
+                        item.classList.add('hide');
+                    }
+                });
+                
+                graphDiv.classList.add('enlarged');
+                Plotly.Plots.resize(graphDiv).then(() => {
+                    Plotly.relayout(graphDiv, { autosize: true });
+                });
+            }
 
             // Handle weather/circuit info
             if (data.weather) {
@@ -631,6 +655,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     generateBtn.click(); // This will reuse existing generation code
                 }
             }
+        generateStandingsGraph('driver_standings', 'driver-standings-container');
+        generateStandingsGraph('constructor_standings', 'constructor-standings-container');
         })
         .catch(error => {
             console.error('Error updating theme:', error);
