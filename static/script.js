@@ -423,7 +423,12 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('headingmain').style.display = 'block';
 
         // Clear existing graphs and instruction text
-        document.getElementById('plot').innerHTML = '';
+        document.getElementById('plot').innerHTML = `
+            <div class="loading-container-row">
+                <img src="/static/PNG Tyre.png" class="spinning-tyre" alt="Loading">
+                <div class="loading-text-drivers">Loading race data...</div>
+            </div>
+        `;
         document.getElementById('weather-info').style.display = 'none';
         document.getElementById('circuit-info').style.display = 'none';
         document.querySelectorAll("h2, .modal-text.graph-label").forEach(el => {

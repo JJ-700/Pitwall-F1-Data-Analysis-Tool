@@ -339,9 +339,11 @@ button {
 /* Loading Animation */
 .loading-container-row {
     display: flex;
-    justify-content: left;
-    height: 100vh;
-    gap: 30px;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    padding: 20px 0;
 }
 
 .country-flag {
@@ -350,11 +352,11 @@ button {
 }
 
 .spinning-tyre {
-    height: 120px;
+    height: 60px;
+    width: 60px;
     animation: spin 0.75s linear infinite;
     object-fit: contain;
-    margin-left: 50%;
-    margin-top: 30%;
+    margin: 0; /* Remove the margin that was pushing it to the side */
 }
 
 @keyframes spin {
@@ -364,10 +366,9 @@ button {
 
 .loading-text-drivers {
     color: var(--f1-light);
-    padding: 10px;
     font-style: italic;
     text-align: center;
-    width: 100%;
+    margin: 0;
 }
 
 /* Weather Tab */
