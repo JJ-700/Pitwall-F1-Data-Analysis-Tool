@@ -546,4 +546,4 @@ def create_quali_figure(session, selected_drivers):
     return fig
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()

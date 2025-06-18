@@ -638,6 +638,16 @@ document.addEventListener('DOMContentLoaded', () => {
     root.setAttribute('data-theme', 'dark');
     toggleBtn.textContent = 'Switch to Light Mode';
 
+    // Explicitly set backend to dark theme on load THIS WORKS
+    fetch('/api/set-theme', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ theme: 'dark' })
+    }).catch(error => {
+        console.error('Error setting initial theme:', error);
+    });
+
+    // Normal theme toggle behavior
     toggleBtn.addEventListener('click', () => {
         const currentTheme = root.getAttribute('data-theme');
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -653,15 +663,15 @@ document.addEventListener('DOMContentLoaded', () => {
             body: JSON.stringify({ theme: newTheme })
         })
         .then(() => {
-            // If graphs are currently displayed, simulate Generate button click
+            // Regenerate graphs if any are displayed
             if (document.querySelector('.graph-item')) {
                 const generateBtn = document.getElementById('generate-btn');
                 if (generateBtn) {
-                    generateBtn.click(); // This will reuse existing generation code
+                    generateBtn.click();
                 }
             }
-        generateStandingsGraph('driver_standings', 'driver-standings-container');
-        generateStandingsGraph('constructor_standings', 'constructor-standings-container');
+            generateStandingsGraph('driver_standings', 'driver-standings-container');
+            generateStandingsGraph('constructor_standings', 'constructor-standings-container');
         })
         .catch(error => {
             console.error('Error updating theme:', error);
