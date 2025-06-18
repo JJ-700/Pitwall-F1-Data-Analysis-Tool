@@ -2,3 +2,4 @@ flask
 fastf1
 pandas
 plotly
+gunicorn
