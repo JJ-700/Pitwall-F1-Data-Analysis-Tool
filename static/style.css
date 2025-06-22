@@ -98,7 +98,16 @@ h1 {
     user-select: none;
     color: var(--f1-light);
 }
-
+.select-btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+    background-color: var(--f1-card);
+    color: var(--f1-light);
+}
 /* Container & Content Styles */
 .container {
     max-width: 100%;

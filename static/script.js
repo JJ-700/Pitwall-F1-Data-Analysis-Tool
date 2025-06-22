@@ -5,7 +5,21 @@ const selectedGraphTypes = new Set(['laptimes']);
 function createDriverButtons(drivers, driverColors) {
     const container = document.getElementById('driver-buttons-container');
     container.innerHTML = '';
-        
+    
+    // Create and add Select All button at the beginning
+    const selectAllBtn = document.createElement('button');
+    selectAllBtn.className = 'select-btn';
+    selectAllBtn.textContent = '|';
+    selectAllBtn.addEventListener('click', () => {
+        container.querySelectorAll('.driver-btn').forEach(btn => {
+            if (!btn.classList.contains('active')) {
+                btn.click(); // Simulate click to select
+            }
+        });
+    });
+    container.appendChild(selectAllBtn);
+    
+    // Add all driver buttons
     drivers.forEach(driver => {
         const btn = document.createElement('button');
         btn.className = 'driver-btn';
@@ -18,23 +32,29 @@ function createDriverButtons(drivers, driverColors) {
             if (btn.classList.contains('active')) {
                 const bgColor = btn.dataset.color;
                 btn.style.backgroundColor = bgColor;
-
-                // Set text color based on background — for Haas (#FFFFFF or close to white)
-                if (bgColor.toLowerCase() === '#ffffff' || bgColor.toLowerCase() === '#fff') {
-                    btn.style.color = 'black';
-                } else {
-                    btn.style.color = 'white';
-                }
-
+                btn.style.color = (bgColor.toLowerCase() === '#ffffff' || bgColor.toLowerCase() === '#fff') 
+                    ? 'black' 
+                    : 'white';
                 selectedDrivers.add(btn.dataset.driver);
             } else {
                 btn.style.backgroundColor = 'var(--f1-card)';
-                btn.style.color = 'var(--f1-light)';                   
+                btn.style.color = 'var(--f1-light)';
                 selectedDrivers.delete(btn.dataset.driver);
             }
         });
         container.appendChild(btn);
     });
+    
+    // Create and add Deselect All button at the end
+    const deselectAllBtn = document.createElement('button');
+    deselectAllBtn.className = 'select-btn';
+    deselectAllBtn.textContent = '|';
+    deselectAllBtn.addEventListener('click', () => {
+        container.querySelectorAll('.driver-btn.active').forEach(btn => {
+            btn.click(); // Simulate click to deselect
+        });
+    });
+    container.appendChild(deselectAllBtn);
 }
 
 // Helper functions
@@ -162,41 +182,36 @@ document.addEventListener('DOMContentLoaded', () => {
             showError('Failed to load races: ' + error.message);
         });
 
-        // Close the modal when the 'Got it!' button is clicked
-        document.getElementById('got-it-btn').onclick = function() {
-            document.getElementById('instructional-modal').style.display = 'none';
-        }
     }
 
     function loadDrivers() {
-        const selectedRace = document.getElementById('race').value;
-        const selectedYear = document.getElementById('year').value;
-        const driverContainer = document.getElementById('driver-buttons-container');
-        
-        driverContainer.innerHTML = '<div class="loading-text-drivers">Loading drivers...</div>';
-        document.getElementById('plot').innerHTML = '';
-        document.getElementById('graph-controls').style.display = 'none';
-        document.getElementById('weather-info').style.display = 'none';
-        selectedDrivers.clear();
-        
-        fetch('/get_drivers', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ race: selectedRace, year: selectedYear })
-        })
-        .then(response => response.json())
-        .then(data => {
-            driverContainer.innerHTML = '';
-            if (data.error) {
-                showError(data.error);
-            } else {
-                createDriverButtons(data.drivers, data.driver_colors);
-            }
-        })
-        .catch(error => {
-            driverContainer.innerHTML = '';
-            showError('Failed to load drivers: ' + error.message);
-        });
+    const selectedRace = document.getElementById('race').value;
+    const selectedYear = document.getElementById('year').value;
+    const driverContainer = document.getElementById('driver-buttons-container');
+    
+    // Show loading state while preserving container structure
+    driverContainer.innerHTML = '<div class="loading-text-drivers">Loading drivers...</div>';
+    document.getElementById('plot').innerHTML = '';
+    document.getElementById('graph-controls').style.display = 'none';
+    document.getElementById('weather-info').style.display = 'none';
+    selectedDrivers.clear();
+    
+    fetch('/get_drivers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ race: selectedRace, year: selectedYear })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            showError(data.error);
+        } else {
+            createDriverButtons(data.drivers, data.driver_colors);
+        }
+    })
+    .catch(error => {
+        showError('Failed to load drivers: ' + error.message);
+    });
     }
 
     function loadSeasonFlags(year, racesData = null) {
@@ -737,6 +752,15 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Element with ID "accessability" not found.');
         }
     });
+
+    document.getElementById("operation-instructions").addEventListener("click", function() {
+        const instructions = document.getElementById("instructions");
+        if (instructions) {
+            instructions.style.display = "block";
+        } else {
+            console.error('Element with ID "instructions" not found.');
+        }
+    });
     
     document.addEventListener('keydown', async (e) => {
         if (e.key === 'Escape') {
@@ -763,7 +787,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (modal) {
                 modal.style.display = modal.style.display === "none" || !modal.style.display ? "block" : "none";
             }
-        }   
+        }
+        if (e.key === 'o' || e.key === 'O') {
+            const modal = document.getElementById("instructions");
+            if (modal) {
+                modal.style.display = modal.style.display === "none" || !modal.style.display ? "block" : "none";
+            }
+        }      
     });
     loadRacesForYear(yearDropdown.value);
 });

@@ -80,11 +80,13 @@
                             <div id="progress-message" style="margin-top: 5px; font-size: 0.9em; color: #ffffff;"></div>
                         </div>
                         <h2 style="text-align: center;" >Welcome to Pitwall F1</h2>
-                        <p class="modal-text graph-label"><em>This tool helps visualize F1 data. Select the drivers, year and race to begin</em></p>
+                        <p class="modal-text graph-label"><em>This tool helps visualize F1 data. Select the year, race then drivers to begin</em></p>
                         <p class="modal-text graph-label"><em>Double-click graph subtitles to make them fullscreen and enhance their detail</em></p>
+                        <p class="modal-text graph-label"><em>Use the leftmost button in the row of drives to select all, and rightmost to deselect</em></p>
                         <p class="modal-text graph-label"><em>Use the left and right arrow keys to navigate the carousel</em></p>
                         <p class="modal-text graph-label"><em>Press Escape to minimise graphs and return to the grid panel</em></p>
                         <p class="modal-text graph-label"><em>This website has accessability features, to view instructions press "A"</em></p>
+                        <p class="modal-text graph-label"><em>If you ever need these instructions again, to view them press "O"</em></p>
                         <p class="modal-text graph-label"><em>*We support light and dark mode, switching themes will regenerate existing graphs</em></p>
                         <p class="modal-text graph-label"><em>(graphs will appear here)</em></p>
                         <div id="plot"></div>
@@ -122,15 +124,15 @@
         <!-- Flags will be loaded here dynamically -->
     </div>
     <p>None of the data available within this software is my own, this project is not affiliated/associated with F1/FOM, this project is aimed at providing a free and useful service within the TOS of FastF1.</p>
-    <p>This is an free, public and Open-Source project distributed under the MIT Lisence, see the full source code <a href="https://github.com/JJ-700">here</a> and thankyou for using Pitwall</p>
+    <p>This is an free, public and Open-Source project distributed under the MIT Licence, see the full source code <a href="https://github.com/JJ-700">here</a> and thankyou for using Pitwall</p>
     <div style="text-align: center; margin-top: 20px;">
         <button id="theme-toggle" class="control-btn">Toggle Theme</button>
-        <button id="accessability-instructions" class="control-btn">Accessability Instructions</button>
+        <button id="accessability-instructions" class="control-btn">Accessibility Instructions</button>
+        <button id="operation-instructions" class="control-btn">Operation Instructions</button>
     </div>
     <!-- Instructional Modal -->
     <div id="accessability" class="modal">
         <div class="modal-content">
-            <span id="close-modal" class="close">&times;</span>
             <h2>Accessability Mode</h2>
             <p class="modal-text">This website is completely navigable via keyboard!</p>
             <p class="modal-text">Use the "TAB" key to move through potential selections</p>
@@ -138,6 +140,20 @@
             <p class="modal-text">Use the "ENTER" key to select any other button</p>
             <p class="modal-text">Use the arrow keys to move through the dropdown menu and slides</p>
             <p class="modal-text">Use the "A" key to appear/dissappear this modal anytime</p>
+        </div>
+    </div>
+
+    <!-- Instructional Modal -->
+    <div id="instructions" class="modal">
+        <div class="modal-content">
+            <h2 style="text-align: center;" >Operation Instructions</h2>
+            <p class="modal-text"><em>This tool helps visualize F1 data. Select the year, race then drivers to begin</em></p>
+            <p class="modal-text"><em>Double-click graph subtitles to make them fullscreen and enhance their detail</em></p>
+            <p class="modal-text"><em>Use the leftmost button in the row of drives to select all, and rightmost to deselect</em></p>
+            <p class="modal-text"><em>Use the left and right arrow keys to navigate the carousel</em></p>
+            <p class="modal-text"><em>Press Escape to minimise graphs and return to the grid panel</em></p>
+            <p class="modal-text"><em>This website has accessability features, to view instructions press "A" after closing this window</em></p>
+            <p class="modal-text"><em>Use the "O" key to appear/disappear this modal anytime</em></p>
         </div>
     </div>
 </body>
