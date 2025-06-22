@@ -367,10 +367,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Function to generate standings graphs
+    // Function to generate standings graphs
     function generateStandingsGraph(graphType, containerId) {
         const container = document.getElementById(containerId);
         const year = document.getElementById('year').value;
         
+        // Create similar loading structure as race-specific graphs
         container.innerHTML = `
             <div class="loading-container-row">
                 <img src="/static/PNG Tyre.png" class="spinning-tyre" alt="Loading">
@@ -396,10 +398,20 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.error) {
                 throw new Error(data.error);
             }
-            
+            // Clear container and create similar structure to race-specific graphs
             container.innerHTML = '';
+            const graphsContainer = document.createElement('div');
+            graphsContainer.className = 'graphs-container-standings';
+            
+            const graphDiv = document.createElement('div');
+            graphDiv.className = 'graph-item-standings';
+            graphDiv.id = `graph-${graphType}`;
+            
+            graphsContainer.appendChild(graphDiv);
+            container.appendChild(graphsContainer);
+            
             if (data.figures[graphType]) {
-                Plotly.newPlot(container, data.figures[graphType].data, data.figures[graphType].layout);
+                Plotly.newPlot(graphDiv, data.figures[graphType].data, data.figures[graphType].layout);
             } else {
                 throw new Error(`Graph data for ${graphType} not found`);
             }
@@ -407,7 +419,13 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch(error => {
             resetProgressBar();
-            container.innerHTML = `<div class="error">${error.message}</div>`;
+            container.innerHTML = `
+                <div class="loading-container" style="border: 3px solid rgb(255, 255, 255); padding: 16px; border-radius: 8px; background-color: #e10600;">
+                    <div class="loading-flag" style="font-size: 2em; text-align: center;">⚠️</div>
+                    <div class="loading-text" style="font-weight: bold; font-size: 1.2em; text-align: center;">Error loading data</div>
+                    <div class="error-details" style="color: rgb(255, 255, 255); margin-top: 10px; text-align: center;">${error.message}</div>
+                </div>
+            `;
         });
     }
 
@@ -437,7 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Please select at least one graph type.");
             return;
         }
-        
+
         document.getElementById('headingmain').style.display = 'block';
         // Clear existing graphs and instruction text
         document.getElementById('plot').innerHTML = `

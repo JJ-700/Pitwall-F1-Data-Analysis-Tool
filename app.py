@@ -113,15 +113,25 @@ def get_drivers():
     try:
         session = fastf1.get_session(year, race, 'R')
         session.load(telemetry=False, weather=False)
-        drivers = session.laps['Driver'].unique().tolist()
+
+        # Step 1: get drivers grouped by team, sorted by team name, in team order
+        team_to_drivers = get_teammates(session)
+        sorted_teams = sorted(team_to_drivers.items(), key=lambda item: item[0].lower())
+        drivers = []
+        for _, team_drivers in sorted_teams:
+            drivers.extend(sorted(team_drivers))  # optional: sort teammates too
+
+        # Step 3: generate color mapping
         colors = {}
         for d in drivers:
             info = session.get_driver(d)
             team = normalize_team_name(info['TeamName'])
             colors[d] = get_driver_color(team, session)
+
         return jsonify({'drivers': drivers, 'driver_colors': colors})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/get_races", methods=["POST"])
 def get_races():
@@ -450,30 +460,37 @@ def create_tyre_figure(session, selected_drivers):
     fig = go.Figure()
     has = False
 
+    # Mapping compounds to F1 colors
+    compound_colors = {
+        "SOFT": "#ff2e2e",
+        "MEDIUM": "#ffd12e",
+        "HARD": "#f0f0f0",
+        "INTERMEDIATE": "#39b54a",
+        "WET": "#007aff"
+    }
+
     for driver in selected_drivers:
         laps = session.laps.pick_drivers(driver)
         stints = laps[['LapNumber', 'Compound', 'Stint']]
         if stints.empty:
             continue
 
-        info = session.get_driver(driver)
-        team = normalize_team_name(info['TeamName'])
-        color = get_driver_color(team, session)
-
         for stint_num, data in stints.groupby('Stint'):
             start = data['LapNumber'].min()
             end = data['LapNumber'].max()
+            compound = data['Compound'].iloc[0].upper()
+            color = compound_colors.get(compound, "#777777")  # fallback gray
 
             fig.add_trace(go.Scatter(
                 x=[start, end],
                 y=[driver, driver],
                 mode='lines',
                 name=f"{driver} Stint {stint_num}",
-                line=dict(width=10, color=color),  # ← no dash variation
+                line=dict(width=10, color=color),
                 hoverinfo='text',
                 hovertext=(
                     f"Driver: {driver}<br>Stint: {stint_num}"
-                    f"<br>Compound: {data['Compound'].iloc[0]}"
+                    f"<br>Compound: {compound}"
                     f"<br>Laps: {start}-{end}"
                 ),
                 legendgroup=driver
@@ -491,6 +508,7 @@ def create_tyre_figure(session, selected_drivers):
         showlegend=False
     )
     return fig
+
 
 def create_quali_figure(session, selected_drivers):
     try:

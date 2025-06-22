@@ -294,6 +294,22 @@ button {
     width: 100%;
 }
 
+.graphs-container-standings {
+    width: 100%;
+}
+
+.graph-item-standings {
+    background: var(--f1-dark);
+    padding: 15px;
+    padding-bottom: 40px;
+    border-radius: 8px;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all 0.3s;
+}
+
 .graph-item {
     background: var(--f1-dark);
     padding: 15px;
@@ -451,7 +467,7 @@ button {
 
 /* Theme Toggle Button */
 #theme-toggle {
-    background-color: var(--f1-gray);
+    background-color: var(--f1-border);
     color: var(--f1-light);
     border: 1px solid var(--f1-border);
     padding: 8px 15px;
