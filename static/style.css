@@ -15,11 +15,11 @@
     --f1-dark: #ffffff;
     --f1-light: #121212;
     --f1-gray: #e5e7eb;
-    --f1-muted: #374151;
+    --f1-muted: #65696e;
     --f1-bg: #f3f4f6;
-    --f1-panel: #ffffff;
-    --f1-border: #d1d5db;
-    --f1-card: #ffffff;
+    --f1-panel: #ebebeb;
+    --f1-border: #d9d9db;
+    --f1-card: #ebebeb;
 }
 
 /* Base Styles */
@@ -55,6 +55,7 @@ a {
     padding: 15px 0;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
     transition: background-color 0.3s;
+    margin-bottom: 10px;
 }
 
 .header-content {
@@ -152,7 +153,7 @@ button {
 }
 
 .control-btn {
-    background-color: var(--f1-gray);
+    background-color: var(--f1-border);
     margin-right: 10px;
     color: var(--f1-light);
 }
@@ -294,7 +295,7 @@ button {
 }
 
 .graph-item {
-    background: var(--f1-card);
+    background: var(--f1-dark);
     padding: 15px;
     padding-bottom: 40px;
     border-radius: 8px;
@@ -373,7 +374,7 @@ button {
 
 /* Weather Tab */
 .weather-tab {
-    background-color: var(--f1-card);
+    background-color: var(--f1-dark);
     padding: 15px;
     border-radius: 8px;
     margin-top: 20px;
@@ -381,6 +382,7 @@ button {
     display: flex;
     flex-direction: column;
     transition: background-color 0.3s;
+    color: var(--f1-light);
 }
 
 .weather-grid {
@@ -392,7 +394,7 @@ button {
 
 .weather h3 {
     font-size: 1.17em;
-    color: var(--f1-light);
+    color: var(--f1-red);
     user-select: none;
 }
 

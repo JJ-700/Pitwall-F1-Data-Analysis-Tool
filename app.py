@@ -112,7 +112,7 @@ def get_drivers():
     year = int(data.get('year', 2025))
     try:
         session = fastf1.get_session(year, race, 'R')
-        session.load(telemetry=False, weather=False, messages=False)
+        session.load(telemetry=False, weather=False)
         drivers = session.laps['Driver'].unique().tolist()
         colors = {}
         for d in drivers:
@@ -191,7 +191,7 @@ def get_graph():
     if race_specific_types:
         try:
             session = fastf1.get_session(year, race, 'R')
-            session.load()
+            session.load(telemetry=False, weather=True, messages=False, laps=True)
         except Exception as e:
             return jsonify({"error": str(e)}), 500
         
@@ -253,7 +253,7 @@ def create_driver_standings_figure(year):
             if not completed_races.empty:
                 last_race = completed_races.iloc[-1]
                 session = fastf1.get_session(year, last_race['EventName'], 'R')
-                session.load(laps=False, telemetry=False)
+                session.load(laps=False, telemetry=False, messages=False, weather=False)
         except Exception:
             pass
 
@@ -316,7 +316,7 @@ def create_constructor_standings_figure(year):
             if not completed_races.empty:
                 last_race = completed_races.iloc[-1]
                 session = fastf1.get_session(year, last_race['EventName'], 'R')
-                session.load(laps=False, telemetry=False)
+                session.load(laps=False, telemetry=False, messages=False, weather=False)
         except Exception:
             pass
 
@@ -546,4 +546,4 @@ def create_quali_figure(session, selected_drivers):
     return fig
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)

@@ -1,4 +1,3 @@
-src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
 const selectedDrivers = new Set();
 const selectedGraphTypes = new Set(['laptimes']);
 
@@ -244,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const flagNameSpan = document.createElement('span');
                 flagNameSpan.className = 'flag-name';
-                flagNameSpan.textContent = race.name.replace(' Grand Prix', '');
+                flagNameSpan.textContent = race.name.replace(' Grand Prix', ' GP');
                 
                 flagItem.appendChild(flagImg);
                 flagItem.appendChild(flagNameSpan);
@@ -420,20 +419,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedGraphTypes = new Set(Array.from(
             document.querySelectorAll('input[name="graph-type"]:checked')
         ).map(input => input.value));
-        document.getElementById('headingmain').style.display = 'block';
-
-        // Clear existing graphs and instruction text
-        document.getElementById('plot').innerHTML = `
-            <div class="loading-container-row">
-                <img src="/static/PNG Tyre.png" class="spinning-tyre" alt="Loading">
-                <div class="loading-text-drivers">Loading race data...</div>
-            </div>
-        `;
-        document.getElementById('weather-info').style.display = 'none';
-        document.getElementById('circuit-info').style.display = 'none';
-        document.querySelectorAll("h2, .modal-text.graph-label").forEach(el => {
-            el.style.display = "none";
-        });
 
         // Special handling for standings
         const isStandingsOnly = selectedGraphTypes.has('driver_standings') || 
@@ -452,6 +437,20 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Please select at least one graph type.");
             return;
         }
+        
+        document.getElementById('headingmain').style.display = 'block';
+        // Clear existing graphs and instruction text
+        document.getElementById('plot').innerHTML = `
+            <div class="loading-container-row">
+                <img src="/static/PNG Tyre.png" class="spinning-tyre" alt="Loading">
+                <div class="loading-text-drivers">Loading race data...</div>
+            </div>
+        `;
+        document.getElementById('weather-info').style.display = 'none';
+        document.getElementById('circuit-info').style.display = 'none';
+        document.querySelectorAll("h2, .modal-text.graph-label").forEach(el => {
+            el.style.display = "none";
+        });
 
         showProgressBar();
         updateProgressBar(10, "Checking user input...");
