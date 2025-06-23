@@ -1,5 +1,6 @@
 // get_graph returns the relevant graphs with the selected drivers and session
-// get_drivers returns the relevant drivers with the selected session
+//*Note get_graph will also provide standings graphs without input parameters
+// get_drivers returns all the relevant drivers with the selected session
 BEGIN MAINLINE
     GET webpage
     GET stylesheet
@@ -18,6 +19,13 @@ BEGIN MAINLINE
         ENDIF
         IF Generate Graph Input THEN
             DISPLAY get_graph(Drivers, Session)
+        ENDIF
+        IF Flag Selection Changed THEN
+            Session = Flag Selection
+            IF "command" Key held THEN
+                Drivers = get_drivers(Session)
+                DISPLAY get_graph(Drivers, Session)
+            ENDIF
         ENDIF
     ENDWHILE
 END MAINLINE

@@ -538,9 +538,11 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         document.getElementById('weather-info').style.display = 'none';
         document.getElementById('circuit-info').style.display = 'none';
-        document.querySelectorAll("h2, .modal-text.graph-label").forEach(el => {
+    document.querySelectorAll("h2, .modal-text.graph-label").forEach(el => {
+        if (!el.closest('.modal')) {  // Only hide if not inside a modal
             el.style.display = "none";
-        });
+        }
+    });
 
         showProgressBar();
         updateProgressBar(10, "Checking user input...");
