@@ -64,6 +64,19 @@ function showError(message) {
     errorDiv.style.display = 'block';
 }
 
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
+
+function closeAllModals() {
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.style.display = 'none';
+    });
+}
+
 function clearError() {
     const errorDiv = document.getElementById('error');
     errorDiv.textContent = "";
@@ -237,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        function renderFlags(races) {
+        function renderFlags(races) {   
             flagsContainer.innerHTML = '';
             const currentRace = document.getElementById('race').value;
             
@@ -267,15 +280,59 @@ document.addEventListener('DOMContentLoaded', () => {
                     flagItem.classList.add('active');
                 }
                 
-                flagItem.addEventListener('click', () => {
-                    document.querySelectorAll('.flag-item').forEach(item => {
-                        item.classList.remove('active');
-                    });
-                    flagItem.classList.add('active');
-                    
-                    const raceDropdown = document.getElementById('race');
-                    raceDropdown.value = race.value;
-                    raceDropdown.dispatchEvent(new Event('change'));
+                flagItem.addEventListener('click', (e) => {
+                    // Prevent the normal race change behavior if Ctrl or Cmd key is pressed
+                    if (e.ctrlKey || e.metaKey) {
+                        scrollToTop();
+                        // Select all drivers and generate all graphs
+                        document.querySelectorAll('.flag-item').forEach(item => {
+                            item.classList.remove('active');
+                        });
+                        flagItem.classList.add('active');
+                        
+                        // Change the race dropdown
+                        const raceDropdown = document.getElementById('race');
+                        raceDropdown.value = race.value;
+                        
+                        // Wait for drivers to load, then select all and generate graphs
+                        const checkDriversLoaded = setInterval(() => {
+                            const driverButtons = document.querySelectorAll('.driver-btn');
+                            if (driverButtons.length > 0) {
+                                clearInterval(checkDriversLoaded);
+                                
+                                // Select all drivers
+                                driverButtons.forEach(btn => {
+                                    if (!btn.classList.contains('active')) {
+                                        btn.click(); // Simulate click to select
+                                    }
+                                });
+                                
+                                // Check all graph type checkboxes
+                                const graphTypes = ['laptimes', 'position', 'tyre', 'quali'];
+                                document.querySelectorAll('input[name="graph-type"]').forEach(checkbox => {
+                                    checkbox.checked = graphTypes.includes(checkbox.value);
+                                });
+                                
+                                // Click the generate button
+                                setTimeout(() => {
+                                    document.getElementById('generate-btn').click();
+                                }, 300);
+                            }
+                        }, 100);
+                        
+                        // Trigger the race change
+                        raceDropdown.dispatchEvent(new Event('change'));
+                    } else {
+                        // Normal behavior
+                        document.querySelectorAll('.flag-item').forEach(item => {
+                            item.classList.remove('active');
+                        });
+                        flagItem.classList.add('active');
+                        
+                        const raceDropdown = document.getElementById('race');
+                        raceDropdown.value = race.value;
+                        raceDropdown.dispatchEvent(new Event('change'));
+                    }
                 });
                 
                 flagsContainer.appendChild(flagItem);
@@ -728,11 +785,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    document.getElementById('site').addEventListener("dblclick", () => {
-        const modal = document.getElementById("instructional-modal");
-        modal.style.display = "block";
-    });
-
     document.getElementById('plot').addEventListener('dblclick', (e) => {
         if (e.target.tagName === 'H3') {
             const graphItem = e.target.parentElement;
@@ -744,21 +796,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Accessibility modal toggle
     document.getElementById("accessability-instructions").addEventListener("click", function() {
-        const instructions = document.getElementById("accessability");
-        if (instructions) {
-            instructions.style.display = "block";
+        const modal = document.getElementById("accessability");
+        if (modal.style.display === "block") {
+            modal.style.display = "none";
         } else {
-            console.error('Element with ID "accessability" not found.');
+            closeAllModals();
+            modal.style.display = "block";
         }
     });
 
+    // Operation modal toggle
     document.getElementById("operation-instructions").addEventListener("click", function() {
-        const instructions = document.getElementById("instructions");
-        if (instructions) {
-            instructions.style.display = "block";
+        const modal = document.getElementById("instructions");
+        if (modal.style.display === "block") {
+            modal.style.display = "none";
         } else {
-            console.error('Element with ID "instructions" not found.');
+            closeAllModals();
+            modal.style.display = "block";
         }
     });
     
@@ -781,19 +837,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }, 170); // Small delay to ensure CSS changes are applied THIS IS CRITICAL
         }
-        // Add this new condition for the "A" key
         if (e.key === 'a' || e.key === 'A') {
+            e.preventDefault(); // Prevent default browser behavior
             const modal = document.getElementById("accessability");
-            if (modal) {
-                modal.style.display = modal.style.display === "none" || !modal.style.display ? "block" : "none";
+            if (modal.style.display === "block") {
+                modal.style.display = "none";
+            } else {
+                closeAllModals();
+                modal.style.display = "block";
             }
         }
+        
         if (e.key === 'o' || e.key === 'O') {
+            e.preventDefault(); // Prevent default browser behavior
             const modal = document.getElementById("instructions");
-            if (modal) {
-                modal.style.display = modal.style.display === "none" || !modal.style.display ? "block" : "none";
+            if (modal.style.display === "block") {
+                modal.style.display = "none";
+            } else {
+                closeAllModals();
+                modal.style.display = "block";
             }
-        }      
-    });
+        }
+        });
     loadRacesForYear(yearDropdown.value);
 });
