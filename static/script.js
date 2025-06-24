@@ -1,5 +1,4 @@
 const selectedDrivers = new Set();
-const selectedGraphTypes = new Set(['laptimes']);
 
 // Function to create driver buttons
 function createDriverButtons(drivers, driverColors) {
@@ -413,22 +412,6 @@ document.addEventListener('DOMContentLoaded', () => {
             indicator.classList.toggle('active', i === currentSlide);
         });
     }
-    
-    // Keyboard navigation for carousel
-    document.addEventListener('keydown', (e) => {
-        // ... existing key handlers ...
-        
-        // Add carousel navigation
-        if (e.key === 'ArrowLeft') {
-            e.preventDefault();
-            goToSlide(currentSlide - 1);
-            showNavigationHint();
-        } else if (e.key === 'ArrowRight') {
-            e.preventDefault();
-            goToSlide(currentSlide + 1);
-            showNavigationHint();
-        }
-    });
     
     // Show navigation hint temporarily
     function showNavigationHint() {
@@ -859,6 +842,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 closeAllModals();
                 modal.style.display = "block";
             }
+        }
+
+        if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            goToSlide(currentSlide - 1);
+            showNavigationHint();
+        } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            goToSlide(currentSlide + 1);
+            showNavigationHint();
         }
         });
     loadRacesForYear(yearDropdown.value);
