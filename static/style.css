@@ -262,6 +262,7 @@ button {
     align-items: center;
     color: var(--f1-light);
     cursor: pointer;
+    accent-color: var(--f1-red);
 }
 
 .graph-type-option input {

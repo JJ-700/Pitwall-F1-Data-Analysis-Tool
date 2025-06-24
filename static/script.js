@@ -807,7 +807,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Escape') {
             const enlargedItems = document.querySelectorAll('.graph-item.enlarged');
             const hiddenItems = document.querySelectorAll('.graph-item.hide');
-
+            closeAllModals(); // Close any open modals
             // Remove classes first
             enlargedItems.forEach(item => item.classList.remove('enlarged'));
             hiddenItems.forEach(item => item.classList.remove('hide'));
