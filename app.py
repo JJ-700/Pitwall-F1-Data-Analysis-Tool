@@ -82,7 +82,7 @@ def build_team_styles(teammates, selected_drivers):
                 selected_in_team[0]: 'dot',
                 **{d: 'solid' for d in selected_in_team[1:]}
             }
-    return styles #this works now lols
+    return styles
 
 #////////////////APP ROUTES BELOW///////////////////////
 
@@ -120,7 +120,7 @@ def get_drivers():
         sorted_teams = sorted(team_to_drivers.items(), key=lambda item: item[0].lower())
         drivers = []
         for _, team_drivers in sorted_teams:
-            drivers.extend(sorted(team_drivers))  # optional: sort teammates too
+            drivers.extend(sorted(team_drivers))  # Sort teammates too
 
         # Step 2: generate color mapping
         colors = {}
@@ -129,10 +129,9 @@ def get_drivers():
             team = normalize_team_name(info['TeamName'])
             colors[d] = get_driver_color(team, session)
 
-        return jsonify({'drivers': drivers, 'driver_colors': colors})
+        return jsonify({'drivers': drivers, 'driver_colors': colors}) #Send list of drivers and their colours
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 @app.route("/get_races", methods=["POST"]) # Fetch the list of past races
 def get_races():
