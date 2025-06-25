@@ -16,7 +16,7 @@ fastf1.plotting.setup_mpl(
     color_scheme='fastf1',
     misc_mpl_mods=False
 )
-#potentially add top3 most recent as statup graphs
+#initialise FastF1 behaviours
 
 # Caching location is autoselected based on the OS and is autoscanned by FastF1 when retreiving data.
 
@@ -36,7 +36,7 @@ def get_teammates(session):
     return teams
 
 def normalize_team_name(name):
-    """Apply your special Racing Bulls → RB rule."""
+    """Apply the special Racing Bulls → RB rule."""
     return "RB" if name == "Racing Bulls" else name
 
 def get_driver_color(team_name,session):
@@ -68,6 +68,7 @@ def get_teammates(session):
     return teams
 
 def build_team_styles(teammates, selected_drivers):
+    """Builds a dict of styles for teammates based on selected drivers."""
     styles = {}
     selected_drivers = set(selected_drivers)  # For faster lookup
     
@@ -89,7 +90,7 @@ def build_team_styles(teammates, selected_drivers):
 def index():
     return render_template("index.html")
 
-@app.route('/api/set-theme', methods=['POST'])
+@app.route('/api/set-theme', methods=['POST']) # Manage the website light/dark theme
 def set_theme():
     global plotly_template
 
@@ -121,7 +122,7 @@ def get_drivers():
         for _, team_drivers in sorted_teams:
             drivers.extend(sorted(team_drivers))  # optional: sort teammates too
 
-        # Step 3: generate color mapping
+        # Step 2: generate color mapping
         colors = {}
         for d in drivers:
             info = session.get_driver(d)
@@ -133,7 +134,7 @@ def get_drivers():
         return jsonify({"error": str(e)}), 500
 
 
-@app.route("/get_races", methods=["POST"])
+@app.route("/get_races", methods=["POST"]) # Fetch the list of past races
 def get_races():
     data = request.get_json()
     year = int(data.get('year', 2025))
@@ -145,7 +146,7 @@ def get_races():
             (sched['Session5Date'] < now) &
             (~sched['EventName'].str.contains('Testing', na=False, case=False))
         ]
-        past_races = past_races.sort_values('Session5Date')
+        past_races = past_races.sort_values('Session5Date') # Ensure the races are complete and sorted by date
         options = [
             {
                 'value': ev['EventName'].lower().replace(' ', ''),
@@ -158,7 +159,7 @@ def get_races():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-@app.route("/get_circuit_info", methods=["POST"])
+@app.route("/get_circuit_info", methods=["POST"]) # Fetch circuit information from the CIRCUIT_DATABASE
 def get_circuit_info():
     data = request.get_json()
     race_key = data.get('race', '').lower().replace(' ', '')
@@ -169,9 +170,7 @@ def get_circuit_info():
     else:
         return jsonify({"error": "Circuit data not found"}), 404
 
-# Standings endpoints removed from here
-
-@app.route("/get_graph", methods=["POST"])
+@app.route("/get_graph", methods=["POST"]) # Primary endpoint to fetch graphs based on user input
 def get_graph():
     data = request.get_json()
     selected = data.get('drivers', [])
@@ -179,6 +178,7 @@ def get_graph():
     year = int(data.get('year', 2025))
     types = data.get('graph_types', ['laptimes'])
     race_key = data.get('race', '').lower().replace(' ', '')
+    # Collate necessary input params
     
     figures = {}
     weather_payload = None
@@ -216,7 +216,7 @@ def get_graph():
             'humidity': round(weather_df['Humidity'].mean(), 1) if 'Humidity' in weather_df else 'N/A',
             'rainfall': round(float(total_rainfall_mm), 2)
         }
-        circuit_info = CIRCUIT_DATABASE.get(race_key, None)
+        circuit_info = CIRCUIT_DATABASE.get(race_key, None) # Fetch circuit info from CIRCUIT_DATABASE
 
         # Generate race-specific figures
         if 'laptimes' in race_specific_types:
@@ -242,7 +242,7 @@ def get_graph():
         'circuit_info': circuit_info
     })
 
-def create_driver_standings_figure(year):
+def create_driver_standings_figure(year): # Fetch driver standings for a given year
     try:
         ergast = Ergast()
         standings = ergast.get_driver_standings(season=year)
@@ -270,6 +270,7 @@ def create_driver_standings_figure(year):
         colors = []
         display_teams = []
 
+        # Normalize team names and get colors
         for team_list in raw_teams:
             if not isinstance(team_list, list) or not team_list:
                 team_name = "Unknown"
@@ -306,7 +307,7 @@ def create_driver_standings_figure(year):
         print(f"Error: {str(e)}")
         return None
 
-def create_constructor_standings_figure(year):
+def create_constructor_standings_figure(year): # Fetch constructor standings for a given year
     try:
         ergast = Ergast()
         standings = ergast.get_constructor_standings(season=year)
@@ -333,6 +334,7 @@ def create_constructor_standings_figure(year):
         colors = []
         normalized_teams = []
 
+        # Normalize team names and get colors
         for name in team_names:
             norm_name = normalize_team_name(name)
             normalized_teams.append(norm_name)
@@ -364,7 +366,7 @@ def create_constructor_standings_figure(year):
         print(f"Error: {str(e)}")
         return None
     
-def create_lap_time_figure(session, selected_drivers):
+def create_lap_time_figure(session, selected_drivers): # Create a figure for lap times of selected drivers (race specific)
     fig = go.Figure()
     teammates = get_teammates(session)
     team_styles = build_team_styles(teammates, selected_drivers)
@@ -385,7 +387,7 @@ def create_lap_time_figure(session, selected_drivers):
 
         # base style
         style = dict(width=2, color=color)
-        # add dash/solid if defined
+        # add dash/solid if defined for a teammate
         if team in team_styles and driver in team_styles[team]:
             style['dash'] = team_styles[team][driver]
 
@@ -409,9 +411,9 @@ def create_lap_time_figure(session, selected_drivers):
         template=plotly_template,
         hovermode="closest"
     )
-    return fig
+    return fig # Return the figure to the endpoint
 
-def create_position_figure(session, selected_drivers):
+def create_position_figure(session, selected_drivers): # Create a figure for lap positions of selected drivers (race specific)
     fig = go.Figure()
     teammates = get_teammates(session)
     team_styles = build_team_styles(teammates, selected_drivers)
@@ -444,7 +446,7 @@ def create_position_figure(session, selected_drivers):
         has = True
 
     if not has:
-        return None
+        return None #Return nothing if no data
 
     fig.update_layout(
         title=f"Race Position – {session.event['EventName']} {session.event.year}",
@@ -456,7 +458,7 @@ def create_position_figure(session, selected_drivers):
     )
     return fig
 
-def create_tyre_figure(session, selected_drivers):
+def create_tyre_figure(session, selected_drivers): # Create a figure for tyre strategies of selected drivers (race specific)
     fig = go.Figure()
     has = False
 
@@ -510,7 +512,7 @@ def create_tyre_figure(session, selected_drivers):
     return fig
 
 
-def create_quali_figure(session, selected_drivers):
+def create_quali_figure(session, selected_drivers): # Create a figure for qualifying results of selected drivers (qualifying specific)
     try:
         qs = fastf1.get_session(session.event.year, session.event['EventName'], 'Q')
         qs.load()
@@ -564,4 +566,4 @@ def create_quali_figure(session, selected_drivers):
     return fig
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()

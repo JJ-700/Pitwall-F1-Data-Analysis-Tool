@@ -56,7 +56,7 @@ function createDriverButtons(drivers, driverColors) {
     container.appendChild(deselectAllBtn);
 }
 
-// Helper functions
+// Helper functions below
 function showError(message) {
     const errorDiv = document.getElementById('error');
     errorDiv.textContent = message;
@@ -126,7 +126,7 @@ function resetProgressBar() {
     document.getElementById('progress-bar-container').style.display = 'none';
 }
 
-// Initialize on load
+// Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
     const yearDropdown = document.getElementById('year');
     const raceDropdown = document.getElementById('race');
@@ -162,6 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadRacesForYear(year) {
         raceDropdown.innerHTML = '<option value="">Loading races...</option>';
         
+        // Fetch races for the selected year
         fetch('/get_races', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -208,6 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('weather-info').style.display = 'none';
     selectedDrivers.clear();
     
+    // Fetch drivers
     fetch('/get_drivers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -226,6 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     }
 
+    // Load flags of the races for the current season
     function loadSeasonFlags(year, racesData = null) {
         const flagsContainer = document.getElementById('flags-container');
         flagsContainer.innerHTML = '<div class="loading-text-drivers">Loading flags...</div>';
@@ -279,6 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     flagItem.classList.add('active');
                 }
                 
+                // This is to generate full race summaries when Ctrl or Cmd key is pressed
                 flagItem.addEventListener('click', (e) => {
                     // Prevent the normal race change behavior if Ctrl or Cmd key is pressed
                     if (e.ctrlKey || e.metaKey) {
@@ -383,7 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.carousel').appendChild(indicatorsContainer);
     updateIndicators();
     
-    // Navigation hint
+    // Navigation hint for improved UX
     const navigationHint = document.createElement('div');
     navigationHint.className = 'navigation-hint';
     navigationHint.textContent = '← → Arrow keys to navigate slides';
@@ -421,7 +425,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2000);
     }
     
-    // Function to generate standings graphs
     // Function to generate standings graphs
     function generateStandingsGraph(graphType, containerId) {
         const container = document.getElementById(containerId);
@@ -473,6 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
             completeProgressBar();
         })
         .catch(error => {
+            // Reset progress bar and show error message
             resetProgressBar();
             container.innerHTML = `
                 <div class="loading-container" style="border: 3px solid rgb(255, 255, 255); padding: 16px; border-radius: 8px; background-color: #e10600;">
@@ -484,6 +488,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Run the following code when the generate button is clicked
     document.getElementById('generate-btn').addEventListener('click', () => {
         const selectedRace = document.getElementById('race').value;
         const selectedYear = document.getElementById('year').value;
@@ -530,6 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showProgressBar();
         updateProgressBar(10, "Checking user input...");
 
+        // fetch the graphs from the backend
         fetch('/get_graph', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -603,7 +609,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            // Handle weather/circuit info
+            // Handle weather/circuit info display
             if (data.weather) {
                 const weatherContainer = document.getElementById('weather-info');
                 weatherContainer.innerHTML = `
@@ -670,6 +676,7 @@ document.addEventListener('DOMContentLoaded', () => {
             resetProgressBar();
             console.error('Error:', error);
             
+            // Display error message in the plot area, hinting at potential issues with driver selection and suggested improvements
             const message = error.message.includes("No data") || error.message.includes("400")
               ? "It looks like one of the selected drivers may not have completed any laps in this race (e.g., retired on lap 0). Please try deselecting them and generating the graph again."
               : error.message;
@@ -685,13 +692,14 @@ document.addEventListener('DOMContentLoaded', () => {
           });
     });
     
+    // Handle export button click
     document.getElementById('export-btn').addEventListener('click', () => {
         const graphItems = document.querySelectorAll('.graph-item');
         if (graphItems.length === 0) return;
 
         graphItems.forEach((item) => {
             if (item.style.display !== 'none') {
-                Plotly.toImage(item, { format: 'png', height: 1200, width: 1800 })
+                Plotly.toImage(item, { format: 'png', height: 1200, width: 1800 })  // Defined PNG resolution
                 .then(url => {
                     const graphType = item.id.replace('graph-', '');
                     const a = document.createElement('a');
@@ -712,7 +720,7 @@ document.addEventListener('DOMContentLoaded', () => {
     root.setAttribute('data-theme', 'dark');
     toggleBtn.textContent = 'Switch to Light Mode';
 
-    // Explicitly set backend to dark theme on load THIS WORKS
+    // Explicitly set backend to dark theme on load
     fetch('/api/set-theme', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -770,6 +778,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Enlarge graph on double-click
     document.getElementById('plot').addEventListener('dblclick', (e) => {
         if (e.target.tagName === 'H3') {
             const graphItem = e.target.parentElement;
@@ -803,6 +812,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
+    // Keydnown event listener for keyboard shortcuts
     document.addEventListener('keydown', async (e) => {
         if (e.key === 'Escape') {
             const enlargedItems = document.querySelectorAll('.graph-item.enlarged');
