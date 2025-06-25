@@ -5,15 +5,20 @@ function createDriverButtons(drivers, driverColors) {
     const container = document.getElementById('driver-buttons-container');
     container.innerHTML = '';
     
-    // Create and add Select All button at the beginning
+    // Create and add Select All / Deselect All button at the beginning
     const selectAllBtn = document.createElement('button');
     selectAllBtn.className = 'select-btn';
-    selectAllBtn.textContent = '|';
+    selectAllBtn.textContent = '||';
+    // Toggle logic for select/deselect
     selectAllBtn.addEventListener('click', () => {
-        container.querySelectorAll('.driver-btn').forEach(btn => {
-            if (!btn.classList.contains('active')) {
-                btn.click(); // Simulate click to select
-            }
+        const driverBtns = container.querySelectorAll('.driver-btn');
+        const anySelected = Array.from(driverBtns).some(btn => btn.classList.contains('active'));
+
+        driverBtns.forEach(btn => {
+            // If any are selected, deselect all by clicking active buttons
+            // If none are selected, select all by clicking inactive buttons
+            const shouldClick = anySelected ? btn.classList.contains('active') : !btn.classList.contains('active');
+            if (shouldClick) btn.click();
         });
     });
     container.appendChild(selectAllBtn);
@@ -43,17 +48,6 @@ function createDriverButtons(drivers, driverColors) {
         });
         container.appendChild(btn);
     });
-    
-    // Create and add Deselect All button at the end
-    const deselectAllBtn = document.createElement('button');
-    deselectAllBtn.className = 'select-btn';
-    deselectAllBtn.textContent = '|';
-    deselectAllBtn.addEventListener('click', () => {
-        container.querySelectorAll('.driver-btn.active').forEach(btn => {
-            btn.click(); // Simulate click to deselect
-        });
-    });
-    container.appendChild(deselectAllBtn);
 }
 
 // Helper functions below
