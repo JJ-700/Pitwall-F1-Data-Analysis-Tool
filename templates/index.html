@@ -5,15 +5,16 @@
     <title>Pitwall F1</title>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="header">
+    <!-- Header Section -->
+    <header class="header">
         <div class="header-content">
             <h1 id="site">Pitwall F1</h1>
-            <div class="header-controls">
+            <nav class="header-controls" aria-label="Main Controls">
                 <!-- Session Settings Section -->
-                <div class="session-settings">
+                <section class="session-settings" aria-label="Session Settings">
                     <div class="dropdown-container">
                         <label for="year">Year</label>
                         <select id="year" name="year">
@@ -21,17 +22,16 @@
                             <option value="2024">2024</option>
                         </select>
                     </div>
-            
                     <div class="dropdown-container">
                         <label for="race">Race</label>
                         <select id="race" name="race">
                             <!-- Options will be loaded dynamically -->
                         </select>
                     </div>
-                </div>            
+                </section>
 
                 <!-- Graph Type Selection -->
-                <div class="graph-type-selection">
+                <section class="graph-type-selection" aria-label="Graph Type Selection">
                     <div class="graph-type-options">
                         <label class="graph-type-option">
                             <input type="checkbox" name="graph-type" value="laptimes" checked>
@@ -50,58 +50,68 @@
                             Quali Delta
                         </label>
                     </div>
-                </div>
+                </section>
 
-                <!-- Generate / Export Buttons -->
-                <div class="action-buttons">
+                <!-- Action Buttons -->
+                <section class="action-buttons" aria-label="Graph Actions">
                     <button id="generate-btn">Generate Graphs</button>
                     <div id="graph-controls" style="display: none;">
                         <button id="export-btn" class="control-btn">Export as PNG(s)</button>
                     </div>
-                </div>
-            </div>
+                </section>
+            </nav>
         </div>
-    </div>    
-    
-    <div class="carousel">
-        <div class="slides" id="slideContainer">
-            <!-- Slide 1: Race Data Visualization -->
-            <div class="slide">
-                <div class="container">
-                    <h3 style="text-align: center; display: none;" id="headingmain"> Race Analysis Tool</h3>
-                    <div class="driver-info" id="driver-buttons-container">
-                        <!-- Driver buttons will be loaded here dynamically -->
-                    </div>
-                    <div class="graph-container">
-                        <div id="progress-bar-container" style="display: none; margin-top: 10px;">
-                            <div id="progress-bar"></div>
-                            <div id="progress-message" style="margin-top: 5px; font-size: 0.9em; color: #ffffff;"></div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Carousel Section -->
+        <section class="carousel" aria-label="Content Carousel">
+            <div class="slides" id="slideContainer">
+
+                <!-- Slide 1 -->
+                <article class="slide" aria-label="Race Visualization">
+                    <div class="container">
+                        <h3 style="text-align: center; display: none;" id="headingmain">Race Analysis Tool</h3>
+                        <div class="driver-info" id="driver-buttons-container">
+                            <!-- Driver buttons will be loaded here dynamically -->
                         </div>
-                        <!-- Initial instructions to guide user -->
-                        <h2 style="text-align: center;" >Welcome to Pitwall F1</h2>
-                        <p class="modal-text graph-label"><em>This tool helps visualize F1 data. Select the year, race then drivers to begin</em></p>
-                        <p class="modal-text graph-label"><em>Double-click graph subtitles to make them fullscreen and enhance their detail</em></p>
-                        <p class="modal-text graph-label"><em>Use the " ||" button to select / deselect all drivers</em></p>
-                        <p class="modal-text graph-label"><em>Use the left and right arrow keys to navigate the carousel</em></p>
-                        <p class="modal-text graph-label"><em>Press Escape to minimise graphs and return to the grid panel</em></p>
-                        <p class="modal-text graph-label"><em>Click on the country flags (while holding control) to generate full race summaries</em></p>
-                        <p class="modal-text graph-label"><em>Clicking country flags without holding the control key will change the selected race</em></p>
-                        <p class="modal-text graph-label"><em>This website has accessibility features, to view instructions press "A"</em></p>
-                        <p class="modal-text graph-label"><em>If you ever need these instructions again, to view them press "O"</em></p>
-                        <p class="modal-text graph-label"><em>*We support light and dark mode, switching themes will regenerate existing graphs</em></p>
-                        <p class="modal-text graph-label"><em>(graphs will appear here)</em></p>
-                        <div id="plot"></div>
-                        <div id="lower-container">
-                            <div id="weather-info" class="weather-tab" style="display: none; margin-top:1rem; font-size: 0.9rem;"></div>
-                            <div id="circuit-info" class="weather-tab" style="display: none; margin-top:1rem; font-size: 0.9rem;"></div>
+
+                        <div class="graph-container">
+                            <div id="progress-bar-container" style="display: none; margin-top: 10px;">
+                                <div id="progress-bar"></div>
+                                <div id="progress-message" style="margin-top: 5px; font-size: 0.9em; color: #ffffff;"></div>
+                            </div>
+
+                            <!-- Instructional Text -->
+                            <section aria-labelledby="intro-heading">
+                                <h2 id="intro-heading" style="text-align: center;">Welcome to Pitwall F1</h2>
+                                <p class="modal-text graph-label"><em>This tool helps visualize F1 data. Select the year, race then drivers to begin</em></p>
+                                <p class="modal-text graph-label"><em>Double-click graph subtitles to make them fullscreen and enhance their detail</em></p>
+                                <p class="modal-text graph-label"><em>Use the " ||" button to select / deselect all drivers</em></p>
+                                <p class="modal-text graph-label"><em>Use the left and right arrow keys to navigate the carousel</em></p>
+                                <p class="modal-text graph-label"><em>Press Escape to minimise graphs and return to the grid panel</em></p>
+                                <p class="modal-text graph-label"><em>Click on the country flags (while holding control) to generate full race summaries</em></p>
+                                <p class="modal-text graph-label"><em>Clicking country flags without holding the control key will change the selected race</em></p>
+                                <p class="modal-text graph-label"><em>This website has accessibility features, to view instructions press "A"</em></p>
+                                <p class="modal-text graph-label"><em>If you ever need these instructions again, to view them press "O"</em></p>
+                                <p class="modal-text graph-label"><em>*We support light and dark mode, switching themes will regenerate existing graphs</em></p>
+                                <p class="modal-text graph-label"><em>(graphs will appear here)</em></p>
+                            </section>
+
+                            <div id="plot"></div>
+
+                            <div id="lower-container">
+                                <div id="weather-info" class="weather-tab" style="display: none; margin-top:1rem; font-size: 0.9rem;"></div>
+                                <div id="circuit-info" class="weather-tab" style="display: none; margin-top:1rem; font-size: 0.9rem;"></div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            
-            <!-- Slide 2: Driver/Constructor Standings -->
-            <div class="slide">
-                <div class="container">
+                </article>
+
+                <!-- Slide 2 -->
+                <article class="slide" aria-label="Standings">
+                    <div class="container">
                         <h3 style="text-align: center;">Driver Standings</h3>
                         <div id="driver-standings-container" class="graph-container">
                             <div class="loading-container-row">
@@ -116,46 +126,54 @@
                                 <div class="loading-text-drivers">Loading standings...</div>
                             </div>
                         </div>
-                </div>
+                    </div>
+                </article>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <div class="flags-container" id="flags-container">
-        <!-- Flags will be loaded here dynamically -->
-    </div>
-    <p>None of the data available within this software is my own, this project is not affiliated/associated with F1/FOM, this project is aimed at providing a free and useful service within the TOS of FastF1.</p>
-    <p>This is an free, public and Open-Source project distributed under the MIT Licence, see the full source code <a href="https://github.com/JJ-700">here</a> and thankyou for using Pitwall</p>
-    <div style="text-align: center; margin-top: 20px;">
-        <button id="theme-toggle" class="control-btn">Toggle Theme</button>
-        <button id="accessability-instructions" class="control-btn">Accessibility Instructions</button>
-        <button id="operation-instructions" class="control-btn">Operation Instructions</button>
-    </div>
+        <!-- Flag Selection Section -->
+        <section class="flags-container" id="flags-container" aria-label="Race Flag Selector">
+            <!-- Flags will be loaded here dynamically -->
+        </section>
+    </main>
+
+    <!-- Footer Section -->
+    <footer>
+        <p>None of the data available within this software is my own. This project is not affiliated/associated with F1/FOM, and is aimed at providing a free and useful service within the TOS of FastF1.</p>
+        <p>This is a free, public, and open-source project distributed under the MIT License. View the full source code <a href="https://github.com/JJ-700">here</a>. Thank you for using Pitwall.</p>
+        <div style="text-align: center; margin-top: 20px;">
+            <button id="theme-toggle" class="control-btn">Toggle Theme</button>
+            <button id="accessability-instructions" class="control-btn">Accessibility Instructions</button>
+            <button id="operation-instructions" class="control-btn">Operation Instructions</button>
+        </div>
+    </footer>
+
     <!-- Accessibility Modal -->
-    <div id="accessability" class="modal">
+    <aside id="accessability" class="modal" role="dialog" aria-labelledby="accessibility-heading" aria-hidden="true">
         <div class="modal-content">
-            <h2 style="text-align: center;">Accessibility Instructions</h2>
+            <h2 id="accessibility-heading" style="text-align: center;">Accessibility Instructions</h2>
             <p class="modal-text">This website is completely navigable via keyboard!</p>
             <p class="modal-text">Use the "TAB" key to move through potential selections</p>
             <p class="modal-text">Use the "SPACE" key to select / toggle graph checkboxes</p>
             <p class="modal-text">Use the "ENTER" key to select any other button</p>
             <p class="modal-text">Use the arrow keys to move through the dropdown menu and slides</p>
-            <p class="modal-text">Use the "A" key to appear/dissappear this modal anytime</p>
+            <p class="modal-text">Use the "A" key to appear/disappear this modal anytime</p>
         </div>
-    </div>
+    </aside>
 
-    <!-- Instructional Modal -->
-    <div id="instructions" class="modal">
+    <!-- Operation Instructions Modal -->
+    <aside id="instructions" class="modal" role="dialog" aria-labelledby="instructions-heading" aria-hidden="true">
         <div class="modal-content">
-            <h2 style="text-align: center;" >Operation Instructions</h2>
+            <h2 id="instructions-heading" style="text-align: center;">Operation Instructions</h2>
             <p class="modal-text"><em>This tool helps visualize F1 data. Select the year, race then drivers to begin</em></p>
             <p class="modal-text"><em>Double-click graph subtitles to make them fullscreen and enhance their detail</em></p>
             <p class="modal-text"><em>Use the " ||" button to select / deselect all drivers</em></p>
             <p class="modal-text"><em>Use the left and right arrow keys to navigate the carousel</em></p>
             <p class="modal-text"><em>Press Escape to minimise graphs and return to the grid panel</em></p>
-            <p class="modal-text"><em>This website has accessibility features, to view those instructions press "A" </em></p>
+            <p class="modal-text"><em>This website has accessibility features, to view those instructions press "A"</em></p>
             <p class="modal-text"><em>Use the "O" key to appear/disappear this modal anytime</em></p>
         </div>
-    </div>
+    </aside>
+
 </body>
 </html>
